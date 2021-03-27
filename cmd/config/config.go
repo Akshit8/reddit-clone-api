@@ -6,6 +6,7 @@ import "github.com/spf13/viper"
 type AppConfig struct {
 	Port     int    `mapstructure:"PORT"`
 	Host     string `mapstructure:"HOST"`
+	DBDriver string `mapstructure:"DB_DRIVER"`
 	DBSource string `mapstructure:"DB_SOURCE"`
 	DBName   string `mapstructure:"DB_NAME"`
 }

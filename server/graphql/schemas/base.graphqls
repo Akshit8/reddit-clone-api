@@ -1,0 +1,9 @@
+scalar Time
+
+type Query {
+    healthQuery: String!
+}
+
+type Mutation {
+    healthMutation(msg: String!): String!
+}

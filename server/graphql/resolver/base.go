@@ -1,22 +1,20 @@
-package graph
+package resolver
 
 // This file will be automatically regenerated based on the schema, any resolver implementations
 // will be copied through when generating and any unknown code will be moved to the end.
 
 import (
 	"context"
-	"fmt"
 
-	"github.com/Akshit8/reddit-clone-api/graph/generated"
-	"github.com/Akshit8/reddit-clone-api/graph/model"
+	"github.com/Akshit8/reddit-clone-api/server/graphql/generated"
 )
 
-func (r *mutationResolver) CreateTodo(ctx context.Context, input model.NewTodo) (*model.Todo, error) {
-	panic(fmt.Errorf("not implemented"))
+func (r *mutationResolver) HealthMutation(ctx context.Context, msg string) (string, error) {
+	return msg, nil
 }
 
-func (r *queryResolver) Todos(ctx context.Context) ([]*model.Todo, error) {
-	panic(fmt.Errorf("not implemented"))
+func (r *queryResolver) HealthQuery(ctx context.Context) (string, error) {
+	return "health query working", nil
 }
 
 // Mutation returns generated.MutationResolver implementation.

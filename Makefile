@@ -34,10 +34,10 @@ dropdb:
 	docker exec -it reddit-postgres dropdb redditdb
 
 migrationup:
-	migrate -path db/migration -database "postgres://root:secret@localhost:5432/redditdb?sslmode=disable" -verbose up
+	migrate -path ./pkg/db/migration -database "postgres://root:secret@localhost:5432/redditdb?sslmode=disable" -verbose up
 
 migrationdown:
-	migrate -path db/migration -database "postgres://root:secret@localhost:5432/redditdb?sslmode=disable" -verbose down
+	migrate -path ./pkg/db/migration -database "postgres://root:secret@localhost:5432/redditdb?sslmode=disable" -verbose down
 
 sqlc:
 	sqlc generate

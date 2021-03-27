@@ -14,7 +14,7 @@ services:
       - data:/var/lib/postgresql/data
   
   pgadmin:
-    container_name: pgadmin4_container
+    container_name: pgadmin-reddit
     image: dpage/pgadmin4
     restart: always
     environment:

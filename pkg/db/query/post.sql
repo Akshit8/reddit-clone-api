@@ -1,8 +1,6 @@
 -- name: CreatePost :one
-INSERT INTO posts (
-  title,
-  created_at,
-  updated_at
+INSERT INTO post (
+  title
 ) VALUES (
-  $1, $2, $3
+  $1
 ) RETURNING *;

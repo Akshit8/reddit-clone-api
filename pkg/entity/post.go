@@ -3,6 +3,7 @@ package entity
 
 import "time"
 
+// Post defines entity POST.
 type Post struct {
 	ID        int
 	Title     string
