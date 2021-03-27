@@ -7,8 +7,8 @@ import (
 )
 
 type Post struct {
-	ID        int32     `json:"id"`
-	Title     string    `json:"title"`
-	Createdat time.Time `json:"createdat"`
-	Updatedat time.Time `json:"updatedat"`
+	ID        int32
+	Title     string
+	Createdat time.Time
+	Updatedat time.Time
 }

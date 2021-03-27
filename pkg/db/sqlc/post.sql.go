@@ -26,3 +26,53 @@ func (q *Queries) CreatePost(ctx context.Context, title string) (Post, error) {
 	)
 	return i, err
 }
+
+const getPostByID = `-- name: GetPostByID :one
+SELECT id, title, createdat, updatedat FROM post
+WHERE id = $1 LIMIT 1
+`
+
+func (q *Queries) GetPostByID(ctx context.Context, id int32) (Post, error) {
+	row := q.queryRow(ctx, q.getPostByIDStmt, getPostByID, id)
+	var i Post
+	err := row.Scan(
+		&i.ID,
+		&i.Title,
+		&i.Createdat,
+		&i.Updatedat,
+	)
+	return i, err
+}
+
+const getPosts = `-- name: GetPosts :many
+SELECT id, title, createdat, updatedat FROM post
+ORDER BY id
+`
+
+func (q *Queries) GetPosts(ctx context.Context) ([]Post, error) {
+	rows, err := q.query(ctx, q.getPostsStmt, getPosts)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Post{}
+	for rows.Next() {
+		var i Post
+		if err := rows.Scan(
+			&i.ID,
+			&i.Title,
+			&i.Createdat,
+			&i.Updatedat,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}

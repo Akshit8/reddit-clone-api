@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"fmt"
 	"net/http"
 
 	"github.com/Akshit8/reddit-clone-api/cmd/config"
@@ -32,5 +33,7 @@ func main() {
 	postService := post.NewPostService(repo)
 
 	graphqlServer := graphql.NewGraphqlServer(postService)
-	http.ListenAndServe(":8000", graphqlServer)
+	serverAddress := fmt.Sprintf("%s:%d", appConfig.Host, appConfig.Port)
+	log.Println("starting server at: ", serverAddress)
+	http.ListenAndServe(serverAddress, graphqlServer)
 }

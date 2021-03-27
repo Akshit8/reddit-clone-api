@@ -1,12 +1,14 @@
-// Package entity defines all api entities.
+// Package entity defines entities and associated functionality for all api resources
 package entity
 
 import "time"
 
-// Post defines entity POST.
+// Post defines all fields on entity post.
 type Post struct {
-	ID        int
-	Title     string
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	ID        string    `json:"id"`
+	Title     string    `json:"title"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
+
+

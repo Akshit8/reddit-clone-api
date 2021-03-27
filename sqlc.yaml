@@ -5,7 +5,7 @@ packages:
     queries: "./pkg/db/query/"
     schema: "./pkg/db/migration/"
     engine: "postgresql"
-    emit_json_tags: true
+    emit_json_tags: false
     emit_prepared_queries: true
     # will generate Querier interface with all methods
     emit_interface: false

@@ -25,6 +25,12 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.createPostStmt, err = db.PrepareContext(ctx, createPost); err != nil {
 		return nil, fmt.Errorf("error preparing query CreatePost: %w", err)
 	}
+	if q.getPostByIDStmt, err = db.PrepareContext(ctx, getPostByID); err != nil {
+		return nil, fmt.Errorf("error preparing query GetPostByID: %w", err)
+	}
+	if q.getPostsStmt, err = db.PrepareContext(ctx, getPosts); err != nil {
+		return nil, fmt.Errorf("error preparing query GetPosts: %w", err)
+	}
 	return &q, nil
 }
 
@@ -33,6 +39,16 @@ func (q *Queries) Close() error {
 	if q.createPostStmt != nil {
 		if cerr := q.createPostStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing createPostStmt: %w", cerr)
+		}
+	}
+	if q.getPostByIDStmt != nil {
+		if cerr := q.getPostByIDStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getPostByIDStmt: %w", cerr)
+		}
+	}
+	if q.getPostsStmt != nil {
+		if cerr := q.getPostsStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getPostsStmt: %w", cerr)
 		}
 	}
 	return err
@@ -72,15 +88,19 @@ func (q *Queries) queryRow(ctx context.Context, stmt *sql.Stmt, query string, ar
 }
 
 type Queries struct {
-	db             DBTX
-	tx             *sql.Tx
-	createPostStmt *sql.Stmt
+	db              DBTX
+	tx              *sql.Tx
+	createPostStmt  *sql.Stmt
+	getPostByIDStmt *sql.Stmt
+	getPostsStmt    *sql.Stmt
 }
 
 func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 	return &Queries{
-		db:             tx,
-		tx:             tx,
-		createPostStmt: q.createPostStmt,
+		db:              tx,
+		tx:              tx,
+		createPostStmt:  q.createPostStmt,
+		getPostByIDStmt: q.getPostByIDStmt,
+		getPostsStmt:    q.getPostsStmt,
 	}
 }
