@@ -1,0 +1,5 @@
+PORT: 8000
+HOST: 0.0.0.0
+
+DB_SOURCE: postgres://root:secret@localhost:5432/redditdb?sslmode=disable
+DB_NAME: redditdb
