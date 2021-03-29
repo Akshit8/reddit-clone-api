@@ -9,6 +9,7 @@ import (
 	db "github.com/Akshit8/reddit-clone-api/pkg/db/sqlc"
 	"github.com/Akshit8/reddit-clone-api/pkg/logger"
 	"github.com/Akshit8/reddit-clone-api/pkg/post"
+	"github.com/Akshit8/reddit-clone-api/pkg/token"
 	"github.com/Akshit8/reddit-clone-api/pkg/user"
 	"github.com/Akshit8/reddit-clone-api/server/graphql"
 	_ "github.com/lib/pq"
@@ -30,9 +31,14 @@ func main() {
 		log.Fatal("cannot connect to db:", err)
 	}
 
+	tokenMaker, err := token.NewJWTMaker(appConfig.SecretKey)
+	if err != nil {
+		log.Fatal("cannot create token maker: ", err)
+	}
+
 	repo := db.New(conn)
 	postService := post.NewPostService(repo)
-	userService := user.NewUserService(repo)
+	userService := user.NewUserService(repo, tokenMaker)
 
 	graphqlServer := graphql.NewGraphqlServer(postService, userService)
 	serverAddress := fmt.Sprintf("%s:%d", appConfig.Host, appConfig.Port)

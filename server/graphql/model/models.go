@@ -11,6 +11,10 @@ type CreatePost struct {
 	Description string `json:"description"`
 }
 
+type LoginResponse struct {
+	Token string `json:"token"`
+}
+
 type LoginUser struct {
 	Username string `json:"username"`
 	Password string `json:"password"`

@@ -10,26 +10,31 @@ import (
 	db "github.com/Akshit8/reddit-clone-api/pkg/db/sqlc"
 	"github.com/Akshit8/reddit-clone-api/pkg/entity"
 	"github.com/Akshit8/reddit-clone-api/pkg/password"
+	"github.com/Akshit8/reddit-clone-api/pkg/token"
 	"github.com/lib/pq"
 	"github.com/reiver/go-pqerror"
 )
 
+const tokenDuration = 1 * time.Hour
+
 // Service defines functions available on entity user
 type Service interface {
 	RegisterUser(ctx context.Context, username, password string) (entity.User, error)
-	LoginUser(ctx context.Context, username, password string) (entity.User, error)
+	LoginUser(ctx context.Context, username, password string) (string, error)
 }
 
 type userService struct {
-	repo   *db.Queries
-	hasher password.Hasher
+	repo       *db.Queries
+	hasher     password.Hasher
+	tokenMaker token.Maker
 }
 
 // NewUserService creates new instance of postService
-func NewUserService(repo *db.Queries) Service {
+func NewUserService(repo *db.Queries, tokenMaker token.Maker) Service {
 	return &userService{
 		repo:   repo,
 		hasher: password.NewNativeHasher(),
+		tokenMaker: tokenMaker,
 	}
 }
 
@@ -67,26 +72,24 @@ func (u *userService) RegisterUser(ctx context.Context, username, password strin
 	return result, nil
 }
 
-func (u *userService) LoginUser(ctx context.Context, username, password string) (entity.User, error) {
+func (u *userService) LoginUser(ctx context.Context, username, password string) (string, error) {
 	user, err := u.repo.GetUserByUsername(ctx, username)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return entity.User{}, errors.New("username doesn't exists")
+			return "", errors.New("username doesn't exists")
 		}
-		return entity.User{}, err
+		return "", err
 	}
 
 	err = u.hasher.CheckPassword(password, user.Password)
 	if err != nil {
-		return entity.User{}, err
+		return "", err
 	}
 
-	result := entity.User{
-		ID:        int(user.ID),
-		Username:  user.Username,
-		CreatedAt: user.CreatedAt,
-		UpdatedAt: user.UpdatedAt,
+	accessToken, err := u.tokenMaker.CreateToken(user.Username, tokenDuration)
+	if err != nil {
+		return "", err
 	}
 
-	return result, nil
+	return accessToken, nil
 }

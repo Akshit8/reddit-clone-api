@@ -15,7 +15,11 @@ input LoginUser {
     password: String!
 }
 
+type LoginResponse {
+    token: String!
+}
+
 extend type Mutation {
     register(input: RegisterUser!): User!
-    login(input: LoginUser!): User!
+    login(input: LoginUser!): LoginResponse!
 }

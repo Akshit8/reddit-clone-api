@@ -4,6 +4,8 @@ go 1.15
 
 require (
 	github.com/99designs/gqlgen v0.13.0
+	github.com/dgrijalva/jwt-go v3.2.0+incompatible
+	github.com/google/uuid v1.2.0
 	github.com/lib/pq v1.10.0
 	github.com/reiver/go-pqerror v0.0.0-20160209202356-63f13fe5516a
 	github.com/sirupsen/logrus v1.8.1

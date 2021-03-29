@@ -25,17 +25,14 @@ func (r *mutationResolver) Register(ctx context.Context, input model.RegisterUse
 	return result, nil
 }
 
-func (r *mutationResolver) Login(ctx context.Context, input model.LoginUser) (*model.User, error) {
-	user, err := r.UserService.LoginUser(ctx, input.Username, input.Password)
+func (r *mutationResolver) Login(ctx context.Context, input model.LoginUser) (*model.LoginResponse, error) {
+	accessToken, err := r.UserService.LoginUser(ctx, input.Username, input.Password)
 	if err != nil {
 		return nil, err
 	}
 
-	result := &model.User{
-		ID:        user.ID,
-		Username:  user.Username,
-		CreatedAt: user.CreatedAt,
-		UpdatedAt: user.UpdatedAt,
+	result := &model.LoginResponse{
+		Token: accessToken,
 	}
 
 	return result, nil

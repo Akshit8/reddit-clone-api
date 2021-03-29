@@ -4,3 +4,5 @@ HOST: 0.0.0.0
 DB_DRIVER: postgres
 DB_SOURCE: postgres://root:secret@localhost:5432/redditdb?sslmode=disable
 DB_NAME: redditdb
+
+SECRET_KEY: asdfvgyhasdfvgyhasdfvgyhasdfvgyh
