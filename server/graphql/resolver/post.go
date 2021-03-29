@@ -31,3 +31,20 @@ func (r *mutationResolver) CreatePost(ctx context.Context, input model.CreatePos
 
 	return result, nil
 }
+
+func (r *queryResolver) GetPostByID(ctx context.Context, id int) (*model.Post, error) {
+	post, err := r.PostService.GetPostByID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	result := &model.Post{
+		ID:          post.ID,
+		Title:       post.Title,
+		Description: post.Description,
+		CreatedAt:   post.CreatedAt,
+		UpdatedAt:   post.UpdatedAt,
+	}
+
+	return result, nil
+}

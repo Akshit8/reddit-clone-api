@@ -6,8 +6,8 @@ INSERT INTO posts (
   $1, $2
 ) RETURNING *;
 
--- -- name: GetPostByID :one
--- SELECT * FROM posts WHERE id = $1 LIMIT 1;
+-- name: GetPostByID :one
+SELECT * FROM posts WHERE id = $1 LIMIT 1;
 
 -- -- name: GetPosts :many
 -- SELECT * FROM posts ORDER BY id;

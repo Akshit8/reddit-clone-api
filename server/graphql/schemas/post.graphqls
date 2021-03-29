@@ -11,10 +11,10 @@ input CreatePost {
     description: String!
 }
 
-# extend type Query {
-#     # getPostById(id: ID!): Post!
-#     # getPosts: [Post!]!
-# }
+extend type Query {
+    getPostById(id: Int!): Post!
+    # getPosts: [Post!]!
+}
 
 extend type Mutation {
     createPost(input: CreatePost!): Post!

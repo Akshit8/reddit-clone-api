@@ -11,7 +11,7 @@ import (
 // Service defines functions available on entity post
 type Service interface {
 	CreatePost(ctx context.Context, post entity.Post) (entity.Post, error)
-	// GetPostByID(ctx context.Context, id int) (entity.Post, error)
+	GetPostByID(ctx context.Context, id int) (entity.Post, error)
 	// GetPosts(ctx context.Context) ([]entity.Post, error)
 	// UpdatePost(ctx context.Context, id int, title string) (entity.Post, error)
 	// DeletePost(ctx context.Context, id int) (bool, error)
@@ -50,19 +50,20 @@ func (p *postService) CreatePost(ctx context.Context, newPost entity.Post) (enti
 	return result, nil
 }
 
-// func (p *postService) GetPostByID(ctx context.Context, id int) (entity.Post, error) {
-// 	post, err := p.repo.GetPostByID(ctx, int32(id))
-// 	if err != nil {
-// 		return entity.Post{}, err
-// 	}
-// 	result := entity.Post{
-// 		ID: int(post.ID),
-// 		Title: post.Title,
-// 		CreatedAt: post.CreatedAt,
-// 		UpdatedAt: post.UpdatedAt,
-// 	}
-// 	return result, nil
-// }
+func (p *postService) GetPostByID(ctx context.Context, id int) (entity.Post, error) {
+	post, err := p.repo.GetPostByID(ctx, int32(id))
+	if err != nil {
+		return entity.Post{}, err
+	}
+	result := entity.Post{
+		ID: int(post.ID),
+		Title: post.Title,
+		Description: post.Description,
+		CreatedAt: post.CreatedAt,
+		UpdatedAt: post.UpdatedAt,
+	}
+	return result, nil
+}
 
 // func (p *postService) GetPosts(ctx context.Context) ([]entity.Post, error) {
 // 	posts, err := p.repo.GetPosts(ctx)

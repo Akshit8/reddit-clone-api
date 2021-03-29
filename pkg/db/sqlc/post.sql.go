@@ -33,3 +33,20 @@ func (q *Queries) CreatePost(ctx context.Context, arg CreatePostParams) (Post, e
 	)
 	return i, err
 }
+
+const getPostByID = `-- name: GetPostByID :one
+SELECT id, title, description, created_at, updated_at FROM posts WHERE id = $1 LIMIT 1
+`
+
+func (q *Queries) GetPostByID(ctx context.Context, id int32) (Post, error) {
+	row := q.queryRow(ctx, q.getPostByIDStmt, getPostByID, id)
+	var i Post
+	err := row.Scan(
+		&i.ID,
+		&i.Title,
+		&i.Description,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
