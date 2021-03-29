@@ -1,7 +1,10 @@
 // Package resolver impls all query/mutation resolver
 package resolver
 
-import "github.com/Akshit8/reddit-clone-api/pkg/post"
+import (
+	"github.com/Akshit8/reddit-clone-api/pkg/post"
+	"github.com/Akshit8/reddit-clone-api/pkg/user"
+)
 
 // This file will not be regenerated automatically.
 //
@@ -10,4 +13,5 @@ import "github.com/Akshit8/reddit-clone-api/pkg/post"
 // Resolver contains entities service objects
 type Resolver struct{
 	PostService post.Service
+	UserService user.Service
 }

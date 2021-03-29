@@ -48,7 +48,7 @@ const deletePostByID = `-- name: DeletePostByID :exec
 DELETE FROM posts WHERE id = $1
 `
 
-func (q *Queries) DeletePostByID(ctx context.Context, id int32) error {
+func (q *Queries) DeletePostByID(ctx context.Context, id int64) error {
 	_, err := q.exec(ctx, q.deletePostByIDStmt, deletePostByID, id)
 	return err
 }
@@ -57,7 +57,7 @@ const getPostByID = `-- name: GetPostByID :one
 SELECT id, title, description, created_at, updated_at FROM posts WHERE id = $1 LIMIT 1
 `
 
-func (q *Queries) GetPostByID(ctx context.Context, id int32) (Post, error) {
+func (q *Queries) GetPostByID(ctx context.Context, id int64) (Post, error) {
 	row := q.queryRow(ctx, q.getPostByIDStmt, getPostByID, id)
 	var i Post
 	err := row.Scan(
@@ -108,7 +108,7 @@ UPDATE posts SET title = $2, description = $3, updated_at = $4 WHERE id = $1
 `
 
 type UpdatePostByIDParams struct {
-	ID          int32
+	ID          int64
 	Title       string
 	Description string
 	UpdatedAt   time.Time

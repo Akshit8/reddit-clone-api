@@ -7,9 +7,17 @@ import (
 )
 
 type Post struct {
-	ID          int32
+	ID          int64
 	Title       string
 	Description string
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
+}
+
+type User struct {
+	ID        int64
+	Username  string
+	Password  string
+	CreatedAt time.Time
+	UpdatedAt time.Time
 }

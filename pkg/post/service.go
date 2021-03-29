@@ -30,11 +30,13 @@ func NewPostService(repo *db.Queries) Service {
 }
 
 func (p *postService) CreatePost(ctx context.Context, newPost entity.Post) (entity.Post, error) {
+	createTimestamp := time.Now()
+	
 	createPostParams := db.CreatePostParams{
 		Title: newPost.Title,
 		Description: newPost.Description,
-		CreatedAt: time.Now(),
-		UpdatedAt: time.Now(),
+		CreatedAt: createTimestamp,
+		UpdatedAt: createTimestamp,
 	}
 
 	post, err := p.repo.CreatePost(ctx, createPostParams)
@@ -54,7 +56,7 @@ func (p *postService) CreatePost(ctx context.Context, newPost entity.Post) (enti
 }
 
 func (p *postService) GetPostByID(ctx context.Context, id int) (entity.Post, error) {
-	post, err := p.repo.GetPostByID(ctx, int32(id))
+	post, err := p.repo.GetPostByID(ctx, int64(id))
 	if err != nil {
 		return entity.Post{}, err
 	}
@@ -109,7 +111,7 @@ func updateHelper(post *entity.Post, updatedPost entity.Post) (title string, des
 }
 
 func (p *postService) UpdatePostByID(ctx context.Context, updatedPost entity.Post) (entity.Post, error) {
-	post, err := p.repo.GetPostByID(ctx, int32(updatedPost.ID))
+	post, err := p.repo.GetPostByID(ctx, int64(updatedPost.ID))
 	if err != nil {
 		return entity.Post{}, err
 	}
@@ -127,7 +129,7 @@ func (p *postService) UpdatePostByID(ctx context.Context, updatedPost entity.Pos
 	title, description := updateHelper(&result, updatedPost)
 
 	err = p.repo.UpdatePostByID(ctx, db.UpdatePostByIDParams{
-		ID: int32(updatedPost.ID),
+		ID: int64(updatedPost.ID),
 		Title: title,
 		Description: description,
 		UpdatedAt: newUpdatedTimeStamp,
@@ -140,12 +142,12 @@ func (p *postService) UpdatePostByID(ctx context.Context, updatedPost entity.Pos
 }
 
 func (p *postService) DeletePostByID(ctx context.Context, id int) (bool, error) {
-	_, err := p.repo.GetPostByID(ctx, int32(id))
+	_, err := p.repo.GetPostByID(ctx, int64(id))
 	if err != nil {
 		return false, err
 	}
 
-	err = p.repo.DeletePostByID(ctx, int32(id))
+	err = p.repo.DeletePostByID(ctx, int64(id))
 	if err != nil {
 		return false, err
 	}

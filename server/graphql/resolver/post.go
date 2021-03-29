@@ -34,18 +34,11 @@ func (r *mutationResolver) CreatePost(ctx context.Context, input model.CreatePos
 	return result, nil
 }
 
-func updateHelper(a *string) string {
-	if a != nil {
-		return *a
-	}
-	return ""
-}
-
 func (r *mutationResolver) UpdatePostByID(ctx context.Context, input model.UpdatePost) (*model.Post, error) {
 	if input.Title == nil && input.Description == nil {
 		return nil, errors.New("no update field provided")
 	}
-	
+
 	updatedPost := entity.Post{
 		ID:          input.ID,
 		Title:       updateHelper(input.Title),
@@ -107,4 +100,17 @@ func (r *queryResolver) GetPosts(ctx context.Context) ([]*model.Post, error) {
 	}
 
 	return result, nil
+}
+
+// !!! WARNING !!!
+// The code below was going to be deleted when updating resolvers. It has been copied here so you have
+// one last chance to move it out of harms way if you want. There are two reasons this happens:
+//  - When renaming or deleting a resolver the old code will be put in here. You can safely delete
+//    it when you're done.
+//  - You have helper methods in this file. Move them out to keep these resolver files clean.
+func updateHelper(a *string) string {
+	if a != nil {
+		return *a
+	}
+	return ""
 }

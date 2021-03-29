@@ -1,2 +1,2 @@
 DROP table "posts";
---DROP table "users";
+DROP table "users";

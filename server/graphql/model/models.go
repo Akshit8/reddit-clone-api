@@ -11,6 +11,11 @@ type CreatePost struct {
 	Description string `json:"description"`
 }
 
+type LoginUser struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
+}
+
 type Post struct {
 	ID          int       `json:"id"`
 	Title       string    `json:"title"`
@@ -19,8 +24,20 @@ type Post struct {
 	UpdatedAt   time.Time `json:"updatedAt"`
 }
 
+type RegisterUser struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
+}
+
 type UpdatePost struct {
 	ID          int     `json:"id"`
 	Title       *string `json:"title"`
 	Description *string `json:"description"`
+}
+
+type User struct {
+	ID        int       `json:"id"`
+	Username  string    `json:"username"`
+	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
 }

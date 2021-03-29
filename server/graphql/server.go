@@ -7,14 +7,19 @@ import (
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/Akshit8/reddit-clone-api/pkg/post"
+	"github.com/Akshit8/reddit-clone-api/pkg/user"
 	"github.com/Akshit8/reddit-clone-api/server/graphql/generated"
 	"github.com/Akshit8/reddit-clone-api/server/graphql/resolver"
 )
 
 // NewGraphqlServer creates a new graphql server and returns the server multiplexer
-func NewGraphqlServer(postService post.Service) *http.ServeMux {
+func NewGraphqlServer(
+	postService post.Service, 
+	userService user.Service,
+	) *http.ServeMux {
 	config := generated.Config{Resolvers: &resolver.Resolver{
 		PostService: postService,
+		UserService: userService,
 	}}
 	executableSchema := generated.NewExecutableSchema(config)
 	srv := handler.NewDefaultServer(executableSchema)
