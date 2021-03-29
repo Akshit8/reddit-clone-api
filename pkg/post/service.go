@@ -29,70 +29,74 @@ func NewPostService(repo *db.Queries) Service {
 }
 
 func (p *postService) CreatePost(ctx context.Context, newPost entity.Post) (entity.Post, error) {
-	post, err := p.repo.CreatePost(ctx, db.CreatePostParams{
+	createPostParams := db.CreatePostParams{
 		Title: newPost.Title,
-		Text: newPost.Text,
-	})
-	if err != nil {
-		return entity.Post{}, err
+		Description: newPost.Description,
 	}
-	result := entity.Post{
-		ID: 23,
-		Title: post.Title,
-		Text: post.Text,
-		CreatedAt: post.CreatedAt,
-		UpdatedAt: post.UpdatedAt,
-	}
-	return result, nil
-}
 
-func (p *postService) GetPostByID(ctx context.Context, id int) (entity.Post, error) {
-	post, err := p.repo.GetPostByID(ctx, int32(id))
+	post, err := p.repo.CreatePost(ctx, createPostParams)
 	if err != nil {
-		return entity.Post{}, err
+		return entity.Post{}, nil
 	}
+
 	result := entity.Post{
 		ID: int(post.ID),
 		Title: post.Title,
+		Description: post.Description,
 		CreatedAt: post.CreatedAt,
 		UpdatedAt: post.UpdatedAt,
 	}
+
 	return result, nil
 }
 
-func (p *postService) GetPosts(ctx context.Context) ([]entity.Post, error) {
-	posts, err := p.repo.GetPosts(ctx)
-	if err != nil {
-		return []entity.Post{}, err
-	}
-	var result []entity.Post
-	for _, post := range posts {
-		result = append(result, entity.Post{
-			ID: int(post.ID),
-			Title: post.Title,
-			CreatedAt: post.CreatedAt,
-			UpdatedAt: post.UpdatedAt,
-		})
-	}
-	return result, nil
-}
+// func (p *postService) GetPostByID(ctx context.Context, id int) (entity.Post, error) {
+// 	post, err := p.repo.GetPostByID(ctx, int32(id))
+// 	if err != nil {
+// 		return entity.Post{}, err
+// 	}
+// 	result := entity.Post{
+// 		ID: int(post.ID),
+// 		Title: post.Title,
+// 		CreatedAt: post.CreatedAt,
+// 		UpdatedAt: post.UpdatedAt,
+// 	}
+// 	return result, nil
+// }
 
-func (p *postService) UpdatePost(ctx context.Context, id int, title string) (entity.Post, error) {
-	err := p.repo.UpdatePostByID(ctx, db.UpdatePostByIDParams{
-		ID: int32(id),
-		Title: title,
-	})
-	if err != nil {
-		return entity.Post{}, err
-	}
-	return entity.Post{}, nil
-}
+// func (p *postService) GetPosts(ctx context.Context) ([]entity.Post, error) {
+// 	posts, err := p.repo.GetPosts(ctx)
+// 	if err != nil {
+// 		return []entity.Post{}, err
+// 	}
+// 	var result []entity.Post
+// 	for _, post := range posts {
+// 		result = append(result, entity.Post{
+// 			ID: int(post.ID),
+// 			Title: post.Title,
+// 			CreatedAt: post.CreatedAt,
+// 			UpdatedAt: post.UpdatedAt,
+// 		})
+// 	}
+// 	return result, nil
+// }
 
-func (p *postService) DeletePost(ctx context.Context, id int) (bool, error) {
-	err := p.repo.DeletePostByID(ctx, int32(id))
-	if err != nil {
-		return false, err
-	}
-	return true, err
-}
+// func (p *postService) UpdatePost(ctx context.Context, id int, title string) (entity.Post, error) {
+// 	err := p.repo.UpdatePostByID(ctx, db.UpdatePostByIDParams{
+// 		ID: int32(id),
+// 		Title: title,
+// 	})
+// 	if err != nil {
+// 		return entity.Post{}, err
+// 	}
+// 	return entity.Post{}, nil
+// }
+
+// func (p *postService) DeletePost(ctx context.Context, id int) (bool, error) {
+// 	err := p.repo.DeletePostByID(ctx, int32(id))
+// 	if err != nil {
+// 		return false, err
+// 	}
+// 	return true, err
+// }
 
