@@ -11,10 +11,10 @@ import (
 // Service defines functions available on entity post
 type Service interface {
 	CreatePost(ctx context.Context, post entity.Post) (entity.Post, error)
-	GetPostByID(ctx context.Context, id string) (entity.Post, error)
-	GetPosts(ctx context.Context) ([]entity.Post, error)
-	UpdatePost(ctx context.Context, id string, title string) (entity.Post, error)
-	DeletePost(ctx context.Context, id string) (bool, error)
+	// GetPostByID(ctx context.Context, id int) (entity.Post, error)
+	// GetPosts(ctx context.Context) ([]entity.Post, error)
+	// UpdatePost(ctx context.Context, id int, title string) (entity.Post, error)
+	// DeletePost(ctx context.Context, id int) (bool, error)
 }
 
 type postService struct {
@@ -28,18 +28,71 @@ func NewPostService(repo *db.Queries) Service {
 	}
 }
 
-func (p *postService) CreatePost(ctx context.Context, newPost db.Post) (db.Post, error) {
-	post, err := p.repo.CreatePost(ctx, newPost.Title)
+func (p *postService) CreatePost(ctx context.Context, newPost entity.Post) (entity.Post, error) {
+	post, err := p.repo.CreatePost(ctx, db.CreatePostParams{
+		Title: newPost.Title,
+		Text: newPost.Text,
+	})
 	if err != nil {
-		return db.Post{}, err
+		return entity.Post{}, err
 	}
-	return post, nil
+	result := entity.Post{
+		ID: 23,
+		Title: post.Title,
+		Text: post.Text,
+		CreatedAt: post.CreatedAt,
+		UpdatedAt: post.UpdatedAt,
+	}
+	return result, nil
 }
 
-func (p *postService) GetPostByID(ctx context.Context, id string) (db.Post, error) {
-	return db.Post{}, nil
+func (p *postService) GetPostByID(ctx context.Context, id int) (entity.Post, error) {
+	post, err := p.repo.GetPostByID(ctx, int32(id))
+	if err != nil {
+		return entity.Post{}, err
+	}
+	result := entity.Post{
+		ID: int(post.ID),
+		Title: post.Title,
+		CreatedAt: post.CreatedAt,
+		UpdatedAt: post.UpdatedAt,
+	}
+	return result, nil
 }
 
-func (p *postService) GetPosts(ctx context.Context) ([]db.Post, error) {
-	return []db.Post{}, nil
+func (p *postService) GetPosts(ctx context.Context) ([]entity.Post, error) {
+	posts, err := p.repo.GetPosts(ctx)
+	if err != nil {
+		return []entity.Post{}, err
+	}
+	var result []entity.Post
+	for _, post := range posts {
+		result = append(result, entity.Post{
+			ID: int(post.ID),
+			Title: post.Title,
+			CreatedAt: post.CreatedAt,
+			UpdatedAt: post.UpdatedAt,
+		})
+	}
+	return result, nil
 }
+
+func (p *postService) UpdatePost(ctx context.Context, id int, title string) (entity.Post, error) {
+	err := p.repo.UpdatePostByID(ctx, db.UpdatePostByIDParams{
+		ID: int32(id),
+		Title: title,
+	})
+	if err != nil {
+		return entity.Post{}, err
+	}
+	return entity.Post{}, nil
+}
+
+func (p *postService) DeletePost(ctx context.Context, id int) (bool, error) {
+	err := p.repo.DeletePostByID(ctx, int32(id))
+	if err != nil {
+		return false, err
+	}
+	return true, err
+}
+
