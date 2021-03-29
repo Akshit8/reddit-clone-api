@@ -48,3 +48,23 @@ func (r *queryResolver) GetPostByID(ctx context.Context, id int) (*model.Post, e
 
 	return result, nil
 }
+
+func (r *queryResolver) GetPosts(ctx context.Context) ([]*model.Post, error) {
+	posts, err := r.PostService.GetPosts(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	var result []*model.Post
+	for _, post := range posts {
+		result = append(result, &model.Post{
+			ID:          post.ID,
+			Title:       post.Title,
+			Description: post.Description,
+			CreatedAt:   post.CreatedAt,
+			UpdatedAt:   post.UpdatedAt,
+		})
+	}
+
+	return result, nil
+}

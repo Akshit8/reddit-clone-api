@@ -13,7 +13,7 @@ input CreatePost {
 
 extend type Query {
     getPostById(id: Int!): Post!
-    # getPosts: [Post!]!
+    getPosts: [Post!]!
 }
 
 extend type Mutation {
