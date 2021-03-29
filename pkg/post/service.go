@@ -3,6 +3,7 @@ package post
 
 import (
 	"context"
+	"time"
 
 	db "github.com/Akshit8/reddit-clone-api/pkg/db/sqlc"
 	"github.com/Akshit8/reddit-clone-api/pkg/entity"
@@ -13,8 +14,8 @@ type Service interface {
 	CreatePost(ctx context.Context, post entity.Post) (entity.Post, error)
 	GetPostByID(ctx context.Context, id int) (entity.Post, error)
 	GetPosts(ctx context.Context) ([]entity.Post, error)
-	// UpdatePost(ctx context.Context, id int, title string) (entity.Post, error)
-	// DeletePost(ctx context.Context, id int) (bool, error)
+	UpdatePostByID(ctx context.Context, post entity.Post) (entity.Post, error)
+	DeletePostByID(ctx context.Context, id int) (bool, error)
 }
 
 type postService struct {
@@ -32,6 +33,8 @@ func (p *postService) CreatePost(ctx context.Context, newPost entity.Post) (enti
 	createPostParams := db.CreatePostParams{
 		Title: newPost.Title,
 		Description: newPost.Description,
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
 	}
 
 	post, err := p.repo.CreatePost(ctx, createPostParams)
@@ -83,26 +86,70 @@ func (p *postService) GetPosts(ctx context.Context) ([]entity.Post, error) {
 			UpdatedAt: post.UpdatedAt,
 		})
 	}
-	
+
 	return result, nil
 }
 
-// func (p *postService) UpdatePost(ctx context.Context, id int, title string) (entity.Post, error) {
-// 	err := p.repo.UpdatePostByID(ctx, db.UpdatePostByIDParams{
-// 		ID: int32(id),
-// 		Title: title,
-// 	})
-// 	if err != nil {
-// 		return entity.Post{}, err
-// 	}
-// 	return entity.Post{}, nil
-// }
+func updateHelper(post *entity.Post, updatedPost entity.Post) (title string, description string) {
+	if updatedPost.Title != "" {
+		title = updatedPost.Title
+		post.Title = updatedPost.Title
+	} else {
+		title = post.Title
+	}
 
-// func (p *postService) DeletePost(ctx context.Context, id int) (bool, error) {
-// 	err := p.repo.DeletePostByID(ctx, int32(id))
-// 	if err != nil {
-// 		return false, err
-// 	}
-// 	return true, err
-// }
+	if updatedPost.Description != "" {
+		description = updatedPost.Description
+		post.Description = updatedPost.Description 
+	} else {
+		description = post.Description
+	}
+
+	return
+}
+
+func (p *postService) UpdatePostByID(ctx context.Context, updatedPost entity.Post) (entity.Post, error) {
+	post, err := p.repo.GetPostByID(ctx, int32(updatedPost.ID))
+	if err != nil {
+		return entity.Post{}, err
+	}
+	
+	newUpdatedTimeStamp := time.Now()
+
+	result := entity.Post{
+		ID: int(post.ID),
+		Title: post.Title,
+		Description: post.Description,
+		CreatedAt: post.CreatedAt,
+		UpdatedAt: newUpdatedTimeStamp,
+	}
+
+	title, description := updateHelper(&result, updatedPost)
+
+	err = p.repo.UpdatePostByID(ctx, db.UpdatePostByIDParams{
+		ID: int32(updatedPost.ID),
+		Title: title,
+		Description: description,
+		UpdatedAt: newUpdatedTimeStamp,
+	})
+	if err != nil {
+		return entity.Post{}, err
+	}
+
+	return result, nil
+}
+
+func (p *postService) DeletePostByID(ctx context.Context, id int) (bool, error) {
+	_, err := p.repo.GetPostByID(ctx, int32(id))
+	if err != nil {
+		return false, err
+	}
+
+	err = p.repo.DeletePostByID(ctx, int32(id))
+	if err != nil {
+		return false, err
+	}
+
+	return true, err
+}
 

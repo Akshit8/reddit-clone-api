@@ -1,7 +1,15 @@
-CREATE TABLE posts (
-    id SERIAL NOT NULL, 
-    title character varying NOT NULL,
-    description character varying NOT NULL,
-    created_at timestamptz NOT NULL DEFAULT (now()), 
-    updated_at timestamptz NOT NULL DEFAULT (now())
+CREATE TABLE "posts" (
+  "id" bigserial PRIMARY KEY,
+  "title" varchar NOT NULL,
+  "description" varchar NOT NULL,
+  "created_at" timestamptz NOT NULL,
+  "updated_at" timestamptz NOT NULL
+);
+
+CREATE TABLE "users" (
+  "id" bigserial PRIMARY KEY,
+  "username" varchar NOT NULL,
+  "password" varchar NOT NULL,
+  "created_at" timestamptz NOT NULL,
+  "updated_at" timestamptz NOT NULL
 );

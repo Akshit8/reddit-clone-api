@@ -5,24 +5,34 @@ package db
 
 import (
 	"context"
+	"time"
 )
 
 const createPost = `-- name: CreatePost :one
 INSERT INTO posts (
   title,
-  description
+  description,
+  created_at,
+  updated_at
 ) VALUES (
-  $1, $2
+  $1, $2, $3, $4
 ) RETURNING id, title, description, created_at, updated_at
 `
 
 type CreatePostParams struct {
 	Title       string
 	Description string
+	CreatedAt   time.Time
+	UpdatedAt   time.Time
 }
 
 func (q *Queries) CreatePost(ctx context.Context, arg CreatePostParams) (Post, error) {
-	row := q.queryRow(ctx, q.createPostStmt, createPost, arg.Title, arg.Description)
+	row := q.queryRow(ctx, q.createPostStmt, createPost,
+		arg.Title,
+		arg.Description,
+		arg.CreatedAt,
+		arg.UpdatedAt,
+	)
 	var i Post
 	err := row.Scan(
 		&i.ID,
@@ -32,6 +42,15 @@ func (q *Queries) CreatePost(ctx context.Context, arg CreatePostParams) (Post, e
 		&i.UpdatedAt,
 	)
 	return i, err
+}
+
+const deletePostByID = `-- name: DeletePostByID :exec
+DELETE FROM posts WHERE id = $1
+`
+
+func (q *Queries) DeletePostByID(ctx context.Context, id int32) error {
+	_, err := q.exec(ctx, q.deletePostByIDStmt, deletePostByID, id)
+	return err
 }
 
 const getPostByID = `-- name: GetPostByID :one
@@ -82,4 +101,25 @@ func (q *Queries) GetPosts(ctx context.Context) ([]Post, error) {
 		return nil, err
 	}
 	return items, nil
+}
+
+const updatePostByID = `-- name: UpdatePostByID :exec
+UPDATE posts SET title = $2, description = $3, updated_at = $4 WHERE id = $1
+`
+
+type UpdatePostByIDParams struct {
+	ID          int32
+	Title       string
+	Description string
+	UpdatedAt   time.Time
+}
+
+func (q *Queries) UpdatePostByID(ctx context.Context, arg UpdatePostByIDParams) error {
+	_, err := q.exec(ctx, q.updatePostByIDStmt, updatePostByID,
+		arg.ID,
+		arg.Title,
+		arg.Description,
+		arg.UpdatedAt,
+	)
+	return err
 }

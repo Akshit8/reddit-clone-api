@@ -25,11 +25,17 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.createPostStmt, err = db.PrepareContext(ctx, createPost); err != nil {
 		return nil, fmt.Errorf("error preparing query CreatePost: %w", err)
 	}
+	if q.deletePostByIDStmt, err = db.PrepareContext(ctx, deletePostByID); err != nil {
+		return nil, fmt.Errorf("error preparing query DeletePostByID: %w", err)
+	}
 	if q.getPostByIDStmt, err = db.PrepareContext(ctx, getPostByID); err != nil {
 		return nil, fmt.Errorf("error preparing query GetPostByID: %w", err)
 	}
 	if q.getPostsStmt, err = db.PrepareContext(ctx, getPosts); err != nil {
 		return nil, fmt.Errorf("error preparing query GetPosts: %w", err)
+	}
+	if q.updatePostByIDStmt, err = db.PrepareContext(ctx, updatePostByID); err != nil {
+		return nil, fmt.Errorf("error preparing query UpdatePostByID: %w", err)
 	}
 	return &q, nil
 }
@@ -41,6 +47,11 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing createPostStmt: %w", cerr)
 		}
 	}
+	if q.deletePostByIDStmt != nil {
+		if cerr := q.deletePostByIDStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing deletePostByIDStmt: %w", cerr)
+		}
+	}
 	if q.getPostByIDStmt != nil {
 		if cerr := q.getPostByIDStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getPostByIDStmt: %w", cerr)
@@ -49,6 +60,11 @@ func (q *Queries) Close() error {
 	if q.getPostsStmt != nil {
 		if cerr := q.getPostsStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getPostsStmt: %w", cerr)
+		}
+	}
+	if q.updatePostByIDStmt != nil {
+		if cerr := q.updatePostByIDStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing updatePostByIDStmt: %w", cerr)
 		}
 	}
 	return err
@@ -88,19 +104,23 @@ func (q *Queries) queryRow(ctx context.Context, stmt *sql.Stmt, query string, ar
 }
 
 type Queries struct {
-	db              DBTX
-	tx              *sql.Tx
-	createPostStmt  *sql.Stmt
-	getPostByIDStmt *sql.Stmt
-	getPostsStmt    *sql.Stmt
+	db                 DBTX
+	tx                 *sql.Tx
+	createPostStmt     *sql.Stmt
+	deletePostByIDStmt *sql.Stmt
+	getPostByIDStmt    *sql.Stmt
+	getPostsStmt       *sql.Stmt
+	updatePostByIDStmt *sql.Stmt
 }
 
 func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 	return &Queries{
-		db:              tx,
-		tx:              tx,
-		createPostStmt:  q.createPostStmt,
-		getPostByIDStmt: q.getPostByIDStmt,
-		getPostsStmt:    q.getPostsStmt,
+		db:                 tx,
+		tx:                 tx,
+		createPostStmt:     q.createPostStmt,
+		deletePostByIDStmt: q.deletePostByIDStmt,
+		getPostByIDStmt:    q.getPostByIDStmt,
+		getPostsStmt:       q.getPostsStmt,
+		updatePostByIDStmt: q.updatePostByIDStmt,
 	}
 }

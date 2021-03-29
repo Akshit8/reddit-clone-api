@@ -5,6 +5,8 @@ package resolver
 
 import (
 	"context"
+	"errors"
+	"fmt"
 
 	"github.com/Akshit8/reddit-clone-api/pkg/entity"
 	"github.com/Akshit8/reddit-clone-api/server/graphql/model"
@@ -30,6 +32,44 @@ func (r *mutationResolver) CreatePost(ctx context.Context, input model.CreatePos
 	}
 
 	return result, nil
+}
+
+func updateHelper(a *string) string {
+	if a != nil {
+		return *a
+	}
+	return ""
+}
+
+func (r *mutationResolver) UpdatePostByID(ctx context.Context, input model.UpdatePost) (*model.Post, error) {
+	if input.Title == nil && input.Description == nil {
+		return nil, errors.New("no update field provided")
+	}
+	
+	updatedPost := entity.Post{
+		ID:          input.ID,
+		Title:       updateHelper(input.Title),
+		Description: updateHelper(input.Description),
+	}
+	fmt.Println(updatedPost)
+	post, err := r.PostService.UpdatePostByID(ctx, updatedPost)
+	if err != nil {
+		return nil, err
+	}
+
+	result := &model.Post{
+		ID:          post.ID,
+		Title:       post.Title,
+		Description: post.Description,
+		CreatedAt:   post.CreatedAt,
+		UpdatedAt:   post.UpdatedAt,
+	}
+
+	return result, nil
+}
+
+func (r *mutationResolver) DeletePostByID(ctx context.Context, id int) (bool, error) {
+	return r.PostService.DeletePostByID(ctx, id)
 }
 
 func (r *queryResolver) GetPostByID(ctx context.Context, id int) (*model.Post, error) {

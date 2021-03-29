@@ -11,6 +11,12 @@ input CreatePost {
     description: String!
 }
 
+input UpdatePost {
+    id: Int!
+    title: String
+    description: String
+}
+
 extend type Query {
     getPostById(id: Int!): Post!
     getPosts: [Post!]!
@@ -18,6 +24,6 @@ extend type Query {
 
 extend type Mutation {
     createPost(input: CreatePost!): Post!
-    # updatePost(title: String!): Post!
-    # deletePost(id: ID!): Boolean!
+    updatePostById(input: UpdatePost!): Post!
+    deletePostById(id: Int!): Boolean!
 }
