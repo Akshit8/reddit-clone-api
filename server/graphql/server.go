@@ -2,21 +2,24 @@
 package graphql
 
 import (
-	"net/http"
-
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
+	"github.com/Akshit8/reddit-clone-api/pkg/middleware"
 	"github.com/Akshit8/reddit-clone-api/pkg/post"
+	"github.com/Akshit8/reddit-clone-api/pkg/token"
 	"github.com/Akshit8/reddit-clone-api/pkg/user"
 	"github.com/Akshit8/reddit-clone-api/server/graphql/generated"
 	"github.com/Akshit8/reddit-clone-api/server/graphql/resolver"
+	chi "github.com/go-chi/chi/v5"
 )
 
 // NewGraphqlServer creates a new graphql server and returns the server multiplexer
 func NewGraphqlServer(
-	postService post.Service, 
+	postService post.Service,
 	userService user.Service,
-	) *http.ServeMux {
+	tokenMaker token.Maker,
+) *chi.Mux {
+
 	config := generated.Config{Resolvers: &resolver.Resolver{
 		PostService: postService,
 		UserService: userService,
@@ -24,10 +27,12 @@ func NewGraphqlServer(
 	executableSchema := generated.NewExecutableSchema(config)
 	srv := handler.NewDefaultServer(executableSchema)
 
-	r := http.NewServeMux()
+	router := chi.NewRouter()
 
-	r.Handle("/", playground.Handler("GraphQL playground", "/query"))
-	r.Handle("/query", srv)
+	router.Use(middleware.Auth(tokenMaker, userService))
 
-	return r
+	router.Handle("/", playground.Handler("GraphQL playground", "/query"))
+	router.Handle("/query", srv)
+
+	return router
 }

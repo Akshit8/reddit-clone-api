@@ -9,10 +9,20 @@ import (
 	"fmt"
 
 	"github.com/Akshit8/reddit-clone-api/pkg/entity"
+	"github.com/Akshit8/reddit-clone-api/pkg/middleware"
 	"github.com/Akshit8/reddit-clone-api/server/graphql/model"
+	"github.com/Akshit8/reddit-clone-api/server/graphql/util"
 )
 
+// ErrUserUnauthorized is ...
+var ErrUserUnauthorized = errors.New("user is unauthorized")
+
 func (r *mutationResolver) CreatePost(ctx context.Context, input model.CreatePost) (*model.Post, error) {
+	user := middleware.FindUserFromContext(ctx)
+	if user == nil {
+		return nil, ErrUserUnauthorized
+	}
+
 	newPost := entity.Post{
 		Title:       input.Title,
 		Description: input.Description,
@@ -41,8 +51,8 @@ func (r *mutationResolver) UpdatePostByID(ctx context.Context, input model.Updat
 
 	updatedPost := entity.Post{
 		ID:          input.ID,
-		Title:       updateHelper(input.Title),
-		Description: updateHelper(input.Description),
+		Title:       util.StringPointerHelper(input.Title),
+		Description: util.StringPointerHelper(input.Description),
 	}
 	fmt.Println(updatedPost)
 	post, err := r.PostService.UpdatePostByID(ctx, updatedPost)
@@ -100,17 +110,4 @@ func (r *queryResolver) GetPosts(ctx context.Context) ([]*model.Post, error) {
 	}
 
 	return result, nil
-}
-
-// !!! WARNING !!!
-// The code below was going to be deleted when updating resolvers. It has been copied here so you have
-// one last chance to move it out of harms way if you want. There are two reasons this happens:
-//  - When renaming or deleting a resolver the old code will be put in here. You can safely delete
-//    it when you're done.
-//  - You have helper methods in this file. Move them out to keep these resolver files clean.
-func updateHelper(a *string) string {
-	if a != nil {
-		return *a
-	}
-	return ""
 }

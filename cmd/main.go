@@ -40,8 +40,8 @@ func main() {
 	postService := post.NewPostService(repo)
 	userService := user.NewUserService(repo, tokenMaker)
 
-	graphqlServer := graphql.NewGraphqlServer(postService, userService)
+	graphqlServer := graphql.NewGraphqlServer(postService, userService, tokenMaker)
 	serverAddress := fmt.Sprintf("%s:%d", appConfig.Host, appConfig.Port)
 	log.Println("starting server at: ", serverAddress)
-	http.ListenAndServe(serverAddress, graphqlServer)
+	log.Fatal(http.ListenAndServe(serverAddress, graphqlServer))
 }

@@ -21,6 +21,7 @@ const tokenDuration = 1 * time.Hour
 type Service interface {
 	RegisterUser(ctx context.Context, username, password string) (entity.User, error)
 	LoginUser(ctx context.Context, username, password string) (string, error)
+	GetUserByUsername(ctx context.Context, username string) (*entity.User, error)
 }
 
 type userService struct {
@@ -92,4 +93,23 @@ func (u *userService) LoginUser(ctx context.Context, username, password string) 
 	}
 
 	return accessToken, nil
+}
+
+func(u *userService) GetUserByUsername(ctx context.Context, username string) (*entity.User, error) {
+	user, err :=  u.repo.GetUserByUsername(ctx, username)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, errors.New("username doesn't exists")
+		}
+		return nil, err
+	}
+
+	result := &entity.User{
+		ID:        int(user.ID),
+		Username:  user.Username,
+		CreatedAt: user.CreatedAt,
+		UpdatedAt: user.UpdatedAt,
+	}
+
+	return result, nil
 }
