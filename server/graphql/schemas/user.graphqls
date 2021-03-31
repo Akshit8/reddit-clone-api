@@ -1,17 +1,19 @@
 type User {
     id: Int!
     username: String!
+    email: String!
     createdAt: Time!
     updatedAt: Time!
 }
 
 input RegisterUser {
     username: String!
+    email: String!
     password: String!
 }
 
 input LoginUser {
-    username: String!
+    usernameOrEmail: String!
     password: String!
 }
 

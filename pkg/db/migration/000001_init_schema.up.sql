@@ -9,6 +9,7 @@ CREATE TABLE "posts" (
 CREATE TABLE "users" (
   "id" bigserial PRIMARY KEY,
   "username" varchar UNIQUE NOT NULL,
+  "email" Varchar UNIQUE NOT NULL,
   "password" varchar NOT NULL,
   "created_at" timestamptz NOT NULL,
   "updated_at" timestamptz NOT NULL

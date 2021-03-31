@@ -10,7 +10,7 @@ import (
 )
 
 func (r *mutationResolver) Register(ctx context.Context, input model.RegisterUser) (*model.User, error) {
-	user, err := r.UserService.RegisterUser(ctx, input.Username, input.Password)
+	user, err := r.UserService.RegisterUser(ctx, input.Username, input.Password, input.Email)
 	if err != nil {
 		return nil, err
 	}
@@ -18,6 +18,7 @@ func (r *mutationResolver) Register(ctx context.Context, input model.RegisterUse
 	result := &model.User{
 		ID:        user.ID,
 		Username:  user.Username,
+		Email:     user.Email,
 		CreatedAt: user.CreatedAt,
 		UpdatedAt: user.UpdatedAt,
 	}
@@ -26,7 +27,7 @@ func (r *mutationResolver) Register(ctx context.Context, input model.RegisterUse
 }
 
 func (r *mutationResolver) Login(ctx context.Context, input model.LoginUser) (*model.LoginResponse, error) {
-	accessToken, err := r.UserService.LoginUser(ctx, input.Username, input.Password)
+	accessToken, err := r.UserService.LoginUser(ctx, input.UsernameOrEmail, input.Password)
 	if err != nil {
 		return nil, err
 	}

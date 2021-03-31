@@ -16,8 +16,8 @@ type LoginResponse struct {
 }
 
 type LoginUser struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
+	UsernameOrEmail string `json:"usernameOrEmail"`
+	Password        string `json:"password"`
 }
 
 type Post struct {
@@ -30,6 +30,7 @@ type Post struct {
 
 type RegisterUser struct {
 	Username string `json:"username"`
+	Email    string `json:"email"`
 	Password string `json:"password"`
 }
 
@@ -42,6 +43,7 @@ type UpdatePost struct {
 type User struct {
 	ID        int       `json:"id"`
 	Username  string    `json:"username"`
+	Email     string    `json:"email"`
 	CreatedAt time.Time `json:"createdAt"`
 	UpdatedAt time.Time `json:"updatedAt"`
 }
