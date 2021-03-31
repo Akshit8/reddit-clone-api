@@ -8,7 +8,10 @@ import (
 	"github.com/Akshit8/reddit-clone-api/cmd/config"
 	db "github.com/Akshit8/reddit-clone-api/pkg/db/sqlc"
 	"github.com/Akshit8/reddit-clone-api/pkg/logger"
+	"github.com/Akshit8/reddit-clone-api/pkg/mail"
+	"github.com/Akshit8/reddit-clone-api/pkg/password"
 	"github.com/Akshit8/reddit-clone-api/pkg/post"
+	"github.com/Akshit8/reddit-clone-api/pkg/redis"
 	"github.com/Akshit8/reddit-clone-api/pkg/token"
 	"github.com/Akshit8/reddit-clone-api/pkg/user"
 	"github.com/Akshit8/reddit-clone-api/server/graphql"
@@ -31,14 +34,28 @@ func main() {
 		log.Fatal("cannot connect to db:", err)
 	}
 
+	redis, err := redis.NewRedisCacheClient(appConfig.RedisURI)
+	if err != nil {
+		log.Fatal("cannot connect to redis:", err)
+	}
+
+	hasher := password.NewNativeHasher()
+
 	tokenMaker, err := token.NewJWTMaker(appConfig.SecretKey)
 	if err != nil {
 		log.Fatal("cannot create token maker: ", err)
 	}
 
+	mailer := mail.NewMailer(
+		appConfig.MailHost,
+		appConfig.MailPort,
+		appConfig.MailUser,
+		appConfig.MailPassword,
+	)
+
 	repo := db.New(conn)
 	postService := post.NewPostService(repo)
-	userService := user.NewUserService(repo, tokenMaker)
+	userService := user.NewUserService(repo, tokenMaker, hasher, redis, mailer)
 
 	graphqlServer := graphql.NewGraphqlServer(postService, userService, tokenMaker)
 	serverAddress := fmt.Sprintf("%s:%d", appConfig.Host, appConfig.Port)

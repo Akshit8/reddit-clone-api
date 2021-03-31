@@ -5,4 +5,11 @@ DB_DRIVER: postgres
 DB_SOURCE: postgres://root:secret@localhost:5432/redditdb?sslmode=disable
 DB_NAME: redditdb
 
+REDIS_URI: redis://localhost:6379
+
+MAIL_HOST: smtp.ethereal.email
+MAIL_PORT: 587
+MAIL_USER: cory74@ethereal.email
+MAIL_PASSWORD: x4NY7ww2DpCfVueHba
+
 SECRET_KEY: asdfvgyhasdfvgyhasdfvgyhasdfvgyh

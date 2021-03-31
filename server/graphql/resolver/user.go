@@ -38,3 +38,7 @@ func (r *mutationResolver) Login(ctx context.Context, input model.LoginUser) (*m
 
 	return result, nil
 }
+
+func (r *mutationResolver) ForgotPassword(ctx context.Context, email string) (bool, error) {
+	return r.UserService.ForgotPassword(ctx, email)
+}

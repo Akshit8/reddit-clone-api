@@ -9,13 +9,13 @@ import (
 const (
 	host = "smtp.ethereal.email"
 	port = 587
-	user = "kira61@ethereal.email"
-	pass = "SuxjFxNeSbQ6FzEhbR"
+	user = "cory74@ethereal.email"
+	pass = "x4NY7ww2DpCfVueHba"
 )
 
 func TestSendMail(t *testing.T) {
 	mailCleint := NewMailer(host, port, user, pass)
-	toMail := []string{"akshitsadana@gmail.com"}
+	toMail := []string{"akshit@gmail.com"}
 	err := mailCleint.SendMail(toMail, "this is a test mail")
 
 	require.NoError(t, err)

@@ -24,4 +24,5 @@ type LoginResponse {
 extend type Mutation {
     register(input: RegisterUser!): User!
     login(input: LoginUser!): LoginResponse!
+    forgotPassword(email: String!): Boolean!
 }
