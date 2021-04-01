@@ -39,6 +39,31 @@ func (r *mutationResolver) Login(ctx context.Context, input model.LoginUser) (*m
 	return result, nil
 }
 
+func (r *mutationResolver) Me(ctx context.Context, id int) (*model.User, error) {
+	user, err := r.UserService.GetUserByID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	result := &model.User{
+		ID:        user.ID,
+		Username:  user.Username,
+		Email:     user.Email,
+		CreatedAt: user.CreatedAt,
+		UpdatedAt: user.UpdatedAt,
+	}
+
+	return result, nil
+}
+
 func (r *mutationResolver) ForgotPassword(ctx context.Context, email string) (bool, error) {
 	return r.UserService.ForgotPassword(ctx, email)
+}
+
+func (r *mutationResolver) ChangePassword(ctx context.Context, input model.ChangePassword) (*model.LoginResponse, error) {
+	token, err := r.UserService.ChangePassword(ctx, input.Token, input.NewPassword)
+	if err != nil {
+		return nil, err
+	}
+	return &model.LoginResponse{Token: token}, nil
 }

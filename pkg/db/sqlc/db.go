@@ -49,6 +49,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.updatePostByIDStmt, err = db.PrepareContext(ctx, updatePostByID); err != nil {
 		return nil, fmt.Errorf("error preparing query UpdatePostByID: %w", err)
 	}
+	if q.updateUserPasswordStmt, err = db.PrepareContext(ctx, updateUserPassword); err != nil {
+		return nil, fmt.Errorf("error preparing query UpdateUserPassword: %w", err)
+	}
 	return &q, nil
 }
 
@@ -99,6 +102,11 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing updatePostByIDStmt: %w", cerr)
 		}
 	}
+	if q.updateUserPasswordStmt != nil {
+		if cerr := q.updateUserPasswordStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing updateUserPasswordStmt: %w", cerr)
+		}
+	}
 	return err
 }
 
@@ -136,31 +144,33 @@ func (q *Queries) queryRow(ctx context.Context, stmt *sql.Stmt, query string, ar
 }
 
 type Queries struct {
-	db                    DBTX
-	tx                    *sql.Tx
-	createPostStmt        *sql.Stmt
-	createUserStmt        *sql.Stmt
-	deletePostByIDStmt    *sql.Stmt
-	getPostByIDStmt       *sql.Stmt
-	getPostsStmt          *sql.Stmt
-	getUserByEmailStmt    *sql.Stmt
-	getUserByIDStmt       *sql.Stmt
-	getUserByUsernameStmt *sql.Stmt
-	updatePostByIDStmt    *sql.Stmt
+	db                     DBTX
+	tx                     *sql.Tx
+	createPostStmt         *sql.Stmt
+	createUserStmt         *sql.Stmt
+	deletePostByIDStmt     *sql.Stmt
+	getPostByIDStmt        *sql.Stmt
+	getPostsStmt           *sql.Stmt
+	getUserByEmailStmt     *sql.Stmt
+	getUserByIDStmt        *sql.Stmt
+	getUserByUsernameStmt  *sql.Stmt
+	updatePostByIDStmt     *sql.Stmt
+	updateUserPasswordStmt *sql.Stmt
 }
 
 func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 	return &Queries{
-		db:                    tx,
-		tx:                    tx,
-		createPostStmt:        q.createPostStmt,
-		createUserStmt:        q.createUserStmt,
-		deletePostByIDStmt:    q.deletePostByIDStmt,
-		getPostByIDStmt:       q.getPostByIDStmt,
-		getPostsStmt:          q.getPostsStmt,
-		getUserByEmailStmt:    q.getUserByEmailStmt,
-		getUserByIDStmt:       q.getUserByIDStmt,
-		getUserByUsernameStmt: q.getUserByUsernameStmt,
-		updatePostByIDStmt:    q.updatePostByIDStmt,
+		db:                     tx,
+		tx:                     tx,
+		createPostStmt:         q.createPostStmt,
+		createUserStmt:         q.createUserStmt,
+		deletePostByIDStmt:     q.deletePostByIDStmt,
+		getPostByIDStmt:        q.getPostByIDStmt,
+		getPostsStmt:           q.getPostsStmt,
+		getUserByEmailStmt:     q.getUserByEmailStmt,
+		getUserByIDStmt:        q.getUserByIDStmt,
+		getUserByUsernameStmt:  q.getUserByUsernameStmt,
+		updatePostByIDStmt:     q.updatePostByIDStmt,
+		updateUserPasswordStmt: q.updateUserPasswordStmt,
 	}
 }

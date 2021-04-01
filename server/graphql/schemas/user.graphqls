@@ -6,6 +6,10 @@ type User {
     updatedAt: Time!
 }
 
+type LoginResponse {
+    token: String!
+}
+
 input RegisterUser {
     username: String!
     email: String!
@@ -17,12 +21,15 @@ input LoginUser {
     password: String!
 }
 
-type LoginResponse {
+input ChangePassword {
     token: String!
+    newPassword: String!
 }
 
 extend type Mutation {
     register(input: RegisterUser!): User!
     login(input: LoginUser!): LoginResponse!
+    me(id: Int!): User!
     forgotPassword(email: String!): Boolean!
+    changePassword(input: ChangePassword!): LoginResponse!
 }

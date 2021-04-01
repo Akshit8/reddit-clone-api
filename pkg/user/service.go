@@ -6,6 +6,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
 
@@ -30,8 +31,10 @@ const (
 type Service interface {
 	RegisterUser(ctx context.Context, username, password, email string) (entity.User, error)
 	LoginUser(ctx context.Context, usernameOrEmail, password string) (string, error)
+	GetUserByID(ctx context.Context, id int) (entity.User, error)
 	GetUserByUsername(ctx context.Context, username string) (*entity.User, error)
 	ForgotPassword(ctx context.Context, email string) (bool, error)
+	ChangePassword(ctx context.Context, token, newPassword string) (string, error)
 }
 
 type userService struct {
@@ -124,6 +127,26 @@ func (u *userService) LoginUser(ctx context.Context, usernameOrEmail, password s
 	return accessToken, nil
 }
 
+func (u *userService) GetUserByID(ctx context.Context, id int) (entity.User, error) {
+	user, err := u.repo.GetUserByID(ctx, int64(id))
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return entity.User{}, errors.New("user not found")
+		}
+		return entity.User{}, err
+	}
+
+	result := entity.User{
+		ID:        int(user.ID),
+		Username:  user.Username,
+		Email:     user.Email,
+		CreatedAt: user.CreatedAt,
+		UpdatedAt: user.UpdatedAt,
+	}
+
+	return result, nil
+}
+
 func (u *userService) GetUserByUsername(ctx context.Context, username string) (*entity.User, error) {
 	user, err := u.repo.GetUserByUsername(ctx, username)
 	if err != nil {
@@ -163,10 +186,48 @@ func (u *userService) ForgotPassword(ctx context.Context, email string) (bool, e
 	}
 
 	mailBody := fmt.Sprintf(`<a href="http://localhost:3000/password-reset/%s">reset-password</a>"`, token)
-	err = u.mailer.SendMail([]string{user.Email}, mailBody)
-	if err != nil {
-		return false, err
-	}
+	// mail sending is done inside a new goroutine.
+	go u.mailer.SendMail([]string{user.Email}, mailBody)
 
 	return true, nil
+}
+
+func (u *userService) ChangePassword(ctx context.Context, token, newPassword string) (string, error) {
+	key := fmt.Sprintf("%s:%s", forgotPasswordPrefix, token)
+	userID, err := u.redis.GetString(key)
+	if err != nil {
+		return "", err
+	}
+
+	id, err := strconv.Atoi(userID)
+	if err != nil {
+		return "", err
+	}
+
+	hashedPassword, err := u.hasher.HashPassword(newPassword)
+	if err != nil {
+		return "", err
+	}
+
+	user, err := u.repo.GetUserByID(ctx, int64(id))
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return "", errors.New("user no longer exists")
+		}
+	}
+
+	err = u.repo.UpdateUserPassword(ctx, db.UpdateUserPasswordParams{
+		ID: user.ID,
+		Password: hashedPassword,
+	})
+	if err != nil {
+		return "", errors.New("update failed")
+	}
+
+	err = u.redis.Delete(key)
+	if err != nil {
+		return "", errors.New("ISR")
+	}
+
+	return u.tokenMaker.CreateToken(user.Username, tokenDuration)
 }

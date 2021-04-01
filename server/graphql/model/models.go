@@ -6,6 +6,11 @@ import (
 	"time"
 )
 
+type ChangePassword struct {
+	Token       string `json:"token"`
+	NewPassword string `json:"newPassword"`
+}
+
 type CreatePost struct {
 	Title       string `json:"title"`
 	Description string `json:"description"`

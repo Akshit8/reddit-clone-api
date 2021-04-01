@@ -10,6 +10,7 @@ import (
 // CacheOperations defines methods for interacting with cache
 type CacheOperations interface {
 	Set(key string, value interface{}, duration time.Duration) error
+	Delete(key string) error
 	GetString(key string) (string, error)
 }
 
@@ -46,4 +47,12 @@ func (r *redisCache) GetString(key string) (string, error) {
 		return "", err
 	}
 	return val, nil
+}
+
+func (r *redisCache) Delete(key string) error {
+	_, err := r.client.Del(key).Result()
+	if err != nil {
+		return err
+	}
+	return nil
 }
