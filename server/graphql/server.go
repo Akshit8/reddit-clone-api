@@ -4,11 +4,11 @@ package graphql
 import (
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
-	"github.com/Akshit8/reddit-clone-api/pkg/middleware"
 	"github.com/Akshit8/reddit-clone-api/pkg/post"
 	"github.com/Akshit8/reddit-clone-api/pkg/token"
 	"github.com/Akshit8/reddit-clone-api/pkg/user"
 	"github.com/Akshit8/reddit-clone-api/server/graphql/generated"
+	"github.com/Akshit8/reddit-clone-api/server/graphql/middleware"
 	"github.com/Akshit8/reddit-clone-api/server/graphql/resolver"
 	chi "github.com/go-chi/chi/v5"
 )

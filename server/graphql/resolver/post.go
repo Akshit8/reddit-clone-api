@@ -9,20 +9,22 @@ import (
 	"fmt"
 
 	"github.com/Akshit8/reddit-clone-api/pkg/entity"
-	"github.com/Akshit8/reddit-clone-api/pkg/middleware"
+	"github.com/Akshit8/reddit-clone-api/server/graphql/generated"
+	"github.com/Akshit8/reddit-clone-api/server/graphql/middleware"
 	"github.com/Akshit8/reddit-clone-api/server/graphql/model"
 	"github.com/Akshit8/reddit-clone-api/server/graphql/util"
 )
 
-func (r *mutationResolver) CreatePost(ctx context.Context, input model.CreatePost) (*model.Post, error) {
+func (r *mutationResolver) CreatePost(ctx context.Context, input model.CreatePost) (*entity.Post, error) {
 	user := middleware.FindUserFromContext(ctx)
 	if user == nil {
 		return nil, errors.New("user is unauthorized")
 	}
 
 	newPost := entity.Post{
-		Title:       input.Title,
-		Description: input.Description,
+		Owner:   user.ID,
+		Title:   input.Title,
+		Content: input.Content,
 	}
 
 	post, err := r.PostService.CreatePost(ctx, newPost)
@@ -30,26 +32,26 @@ func (r *mutationResolver) CreatePost(ctx context.Context, input model.CreatePos
 		return nil, err
 	}
 
-	result := &model.Post{
-		ID:          post.ID,
-		Title:       post.Title,
-		Description: post.Description,
-		CreatedAt:   post.CreatedAt,
-		UpdatedAt:   post.UpdatedAt,
-	}
+	// result := &model.Post{
+	// 	ID:        post.ID,
+	// 	Title:     post.Title,
+	// 	Content:   post.Content,
+	// 	CreatedAt: post.CreatedAt,
+	// 	UpdatedAt: post.UpdatedAt,
+	// }
 
-	return result, nil
+	return &post, nil
 }
 
-func (r *mutationResolver) UpdatePostByID(ctx context.Context, input model.UpdatePost) (*model.Post, error) {
-	if input.Title == nil && input.Description == nil {
+func (r *mutationResolver) UpdatePostByID(ctx context.Context, input model.UpdatePost) (*entity.Post, error) {
+	if input.Title == nil && input.Content == nil {
 		return nil, errors.New("no update field provided")
 	}
 
 	updatedPost := entity.Post{
-		ID:          input.ID,
-		Title:       util.StringPointerHelper(input.Title),
-		Description: util.StringPointerHelper(input.Description),
+		ID:      input.ID,
+		Title:   util.StringPointerHelper(input.Title),
+		Content: util.StringPointerHelper(input.Content),
 	}
 	fmt.Println(updatedPost)
 	post, err := r.PostService.UpdatePostByID(ctx, updatedPost)
@@ -57,54 +59,62 @@ func (r *mutationResolver) UpdatePostByID(ctx context.Context, input model.Updat
 		return nil, err
 	}
 
-	result := &model.Post{
-		ID:          post.ID,
-		Title:       post.Title,
-		Description: post.Description,
-		CreatedAt:   post.CreatedAt,
-		UpdatedAt:   post.UpdatedAt,
-	}
+	// result := &model.Post{
+	// 	ID:        post.ID,
+	// 	Title:     post.Title,
+	// 	Content:   post.Content,
+	// 	CreatedAt: post.CreatedAt,
+	// 	UpdatedAt: post.UpdatedAt,
+	// }
 
-	return result, nil
+	return &post, nil
 }
 
 func (r *mutationResolver) DeletePostByID(ctx context.Context, id int) (bool, error) {
 	return r.PostService.DeletePostByID(ctx, id)
 }
 
-func (r *queryResolver) GetPostByID(ctx context.Context, id int) (*model.Post, error) {
+func (r *postResolver) Owner(ctx context.Context, obj *entity.Post) (*entity.User, error) {
+	user, err := r.UserService.GetUserByID(ctx, obj.Owner)
+	return &user, err
+}
+
+func (r *postResolver) ContentPreview(ctx context.Context, obj *entity.Post) (string, error) {
+	return obj.Content[:50], nil
+}
+
+func (r *queryResolver) GetPostByID(ctx context.Context, id int) (*entity.Post, error) {
 	post, err := r.PostService.GetPostByID(ctx, id)
 	if err != nil {
 		return nil, err
 	}
 
-	result := &model.Post{
-		ID:          post.ID,
-		Title:       post.Title,
-		Description: post.Description,
-		CreatedAt:   post.CreatedAt,
-		UpdatedAt:   post.UpdatedAt,
-	}
+	// result := &model.Post{
+	// 	ID:        post.ID,
+	// 	Title:     post.Title,
+	// 	Content:   post.Content,
+	// 	CreatedAt: post.CreatedAt,
+	// 	UpdatedAt: post.UpdatedAt,
+	// }
 
-	return result, nil
+	return &post, nil
 }
 
-func (r *queryResolver) GetPosts(ctx context.Context) ([]*model.Post, error) {
+func (r *queryResolver) GetPosts(ctx context.Context) ([]*entity.Post, error) {
 	posts, err := r.PostService.GetPosts(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	var result []*model.Post
+	var result []*entity.Post
 	for _, post := range posts {
-		result = append(result, &model.Post{
-			ID:          post.ID,
-			Title:       post.Title,
-			Description: post.Description,
-			CreatedAt:   post.CreatedAt,
-			UpdatedAt:   post.UpdatedAt,
-		})
+		result = append(result, &post)
 	}
 
 	return result, nil
 }
+
+// Post returns generated.PostResolver implementation.
+func (r *Resolver) Post() generated.PostResolver { return &postResolver{r} }
+
+type postResolver struct{ *Resolver }

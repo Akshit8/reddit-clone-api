@@ -7,11 +7,13 @@ import (
 )
 
 type Post struct {
-	ID          int64
-	Title       string
-	Description string
-	CreatedAt   time.Time
-	UpdatedAt   time.Time
+	ID        int64
+	Owner     int64
+	Title     string
+	Content   string
+	Upvotes   int64
+	CreatedAt time.Time
+	UpdatedAt time.Time
 }
 
 type User struct {

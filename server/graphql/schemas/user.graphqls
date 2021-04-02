@@ -2,6 +2,7 @@ type User {
     id: Int!
     username: String!
     email: String!
+    posts: [Post!]!
     createdAt: Time!
     updatedAt: Time!
 }
@@ -26,10 +27,13 @@ input ChangePassword {
     newPassword: String!
 }
 
+extend type Query {
+    me(id: Int!): User!
+}
+
 extend type Mutation {
     register(input: RegisterUser!): User!
     login(input: LoginUser!): LoginResponse!
-    me(id: Int!): User!
     forgotPassword(email: String!): Boolean!
     changePassword(input: ChangePassword!): LoginResponse!
 }

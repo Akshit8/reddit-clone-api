@@ -3,6 +3,7 @@ package middleware
 
 import (
 	"context"
+	"log"
 	"net/http"
 	"strings"
 
@@ -33,6 +34,7 @@ func Auth(tokenMaker token.Maker, userService user.Service) func(http.Handler) h
 			jwtToken := strings.Split(bearerToken, "Bearer ")[1]
 			payload, err := tokenMaker.VerifyToken(jwtToken)
 			if err != nil {
+				log.Println(err.Error())
 				http.Error(w, err.Error(), http.StatusForbidden)
 				return
 			}

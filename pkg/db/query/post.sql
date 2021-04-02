@@ -1,11 +1,10 @@
 -- name: CreatePost :one
 INSERT INTO posts (
+  owner,
   title,
-  description,
-  created_at,
-  updated_at
+  content
 ) VALUES (
-  $1, $2, $3, $4
+  $1, $2, $3
 ) RETURNING *;
 
 -- name: GetPostByID :one
@@ -18,7 +17,7 @@ SELECT * FROM posts ORDER BY id;
 SELECT * FROM posts WHERE owner = $1 ORDER BY id;
 
 -- name: UpdatePostByID :exec
-UPDATE posts SET title = $2, description = $3, updated_at = $4 WHERE id = $1;
+UPDATE posts SET title = $2, content = $3 WHERE id = $1;
 
 -- name: DeletePostByID :exec
 DELETE FROM posts WHERE id = $1;

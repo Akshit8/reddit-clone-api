@@ -14,6 +14,7 @@ type Service interface {
 	CreatePost(ctx context.Context, post entity.Post) (entity.Post, error)
 	GetPostByID(ctx context.Context, id int) (entity.Post, error)
 	GetPosts(ctx context.Context) ([]entity.Post, error)
+	GetUsersPost(ctx context.Context, userID int) ([]entity.Post, error)
 	UpdatePostByID(ctx context.Context, post entity.Post) (entity.Post, error)
 	DeletePostByID(ctx context.Context, id int) (bool, error)
 }
@@ -30,13 +31,10 @@ func NewPostService(repo *db.Queries) Service {
 }
 
 func (p *postService) CreatePost(ctx context.Context, newPost entity.Post) (entity.Post, error) {
-	createTimestamp := time.Now()
-	
 	createPostParams := db.CreatePostParams{
-		Title: newPost.Title,
-		Description: newPost.Description,
-		CreatedAt: createTimestamp,
-		UpdatedAt: createTimestamp,
+		Owner:   int64(newPost.Owner),
+		Title:   newPost.Title,
+		Content: newPost.Content,
 	}
 
 	post, err := p.repo.CreatePost(ctx, createPostParams)
@@ -45,9 +43,10 @@ func (p *postService) CreatePost(ctx context.Context, newPost entity.Post) (enti
 	}
 
 	result := entity.Post{
-		ID: int(post.ID),
-		Title: post.Title,
-		Description: post.Description,
+		ID:        int(post.ID),
+		Title:     post.Title,
+		Owner:     int(post.Owner),
+		Content:   post.Content,
 		CreatedAt: post.CreatedAt,
 		UpdatedAt: post.UpdatedAt,
 	}
@@ -62,9 +61,10 @@ func (p *postService) GetPostByID(ctx context.Context, id int) (entity.Post, err
 	}
 
 	result := entity.Post{
-		ID: int(post.ID),
-		Title: post.Title,
-		Description: post.Description,
+		ID:        int(post.ID),
+		Title:     post.Title,
+		Owner:     int(post.Owner),
+		Content:   post.Content,
 		CreatedAt: post.CreatedAt,
 		UpdatedAt: post.UpdatedAt,
 	}
@@ -81,9 +81,10 @@ func (p *postService) GetPosts(ctx context.Context) ([]entity.Post, error) {
 	var result []entity.Post
 	for _, post := range posts {
 		result = append(result, entity.Post{
-			ID: int(post.ID),
-			Title: post.Title,
-			Description: post.Description,
+			ID:        int(post.ID),
+			Title:     post.Title,
+			Owner:     int(post.Owner),
+			Content:   post.Content,
 			CreatedAt: post.CreatedAt,
 			UpdatedAt: post.UpdatedAt,
 		})
@@ -92,7 +93,7 @@ func (p *postService) GetPosts(ctx context.Context) ([]entity.Post, error) {
 	return result, nil
 }
 
-func updateHelper(post *entity.Post, updatedPost entity.Post) (title string, description string) {
+func updateHelper(post *entity.Post, updatedPost entity.Post) (title string, content string) {
 	if updatedPost.Title != "" {
 		title = updatedPost.Title
 		post.Title = updatedPost.Title
@@ -100,11 +101,11 @@ func updateHelper(post *entity.Post, updatedPost entity.Post) (title string, des
 		title = post.Title
 	}
 
-	if updatedPost.Description != "" {
-		description = updatedPost.Description
-		post.Description = updatedPost.Description 
+	if updatedPost.Content != "" {
+		content = updatedPost.Content
+		post.Content = updatedPost.Content
 	} else {
-		description = post.Description
+		content = post.Content
 	}
 
 	return
@@ -115,24 +116,24 @@ func (p *postService) UpdatePostByID(ctx context.Context, updatedPost entity.Pos
 	if err != nil {
 		return entity.Post{}, err
 	}
-	
+
 	newUpdatedTimeStamp := time.Now()
 
 	result := entity.Post{
-		ID: int(post.ID),
-		Title: post.Title,
-		Description: post.Description,
+		ID:        int(post.ID),
+		Title:     post.Title,
+		Owner:     int(post.Owner),
+		Content:   post.Content,
 		CreatedAt: post.CreatedAt,
 		UpdatedAt: newUpdatedTimeStamp,
 	}
 
-	title, description := updateHelper(&result, updatedPost)
+	title, content := updateHelper(&result, updatedPost)
 
 	err = p.repo.UpdatePostByID(ctx, db.UpdatePostByIDParams{
-		ID: int64(updatedPost.ID),
-		Title: title,
-		Description: description,
-		UpdatedAt: newUpdatedTimeStamp,
+		ID:      int64(updatedPost.ID),
+		Title:   title,
+		Content: content,
 	})
 	if err != nil {
 		return entity.Post{}, err
@@ -155,3 +156,23 @@ func (p *postService) DeletePostByID(ctx context.Context, id int) (bool, error) 
 	return true, err
 }
 
+func (p *postService) GetUsersPost(ctx context.Context, userID int) ([]entity.Post, error) {
+	posts, err := p.repo.GetAllUserPosts(ctx, int64(userID))
+	if err != nil {
+		return []entity.Post{}, err
+	}
+
+	var result []entity.Post
+	for _, post := range posts {
+		result = append(result, entity.Post{
+			ID:        int(post.ID),
+			Title:     post.Title,
+			Owner:     int(post.Owner),
+			Content:   post.Content,
+			CreatedAt: post.CreatedAt,
+			UpdatedAt: post.UpdatedAt,
+		})
+	}
+
+	return result, nil
+}

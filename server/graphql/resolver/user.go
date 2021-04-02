@@ -6,24 +6,26 @@ package resolver
 import (
 	"context"
 
+	"github.com/Akshit8/reddit-clone-api/pkg/entity"
+	"github.com/Akshit8/reddit-clone-api/server/graphql/generated"
 	"github.com/Akshit8/reddit-clone-api/server/graphql/model"
 )
 
-func (r *mutationResolver) Register(ctx context.Context, input model.RegisterUser) (*model.User, error) {
+func (r *mutationResolver) Register(ctx context.Context, input model.RegisterUser) (*entity.User, error) {
 	user, err := r.UserService.RegisterUser(ctx, input.Username, input.Password, input.Email)
 	if err != nil {
 		return nil, err
 	}
 
-	result := &model.User{
-		ID:        user.ID,
-		Username:  user.Username,
-		Email:     user.Email,
-		CreatedAt: user.CreatedAt,
-		UpdatedAt: user.UpdatedAt,
-	}
+	// result := &model.User{
+	// 	ID:        user.ID,
+	// 	Username:  user.Username,
+	// 	Email:     user.Email,
+	// 	CreatedAt: user.CreatedAt,
+	// 	UpdatedAt: user.UpdatedAt,
+	// }
 
-	return result, nil
+	return &user, nil
 }
 
 func (r *mutationResolver) Login(ctx context.Context, input model.LoginUser) (*model.LoginResponse, error) {
@@ -32,28 +34,7 @@ func (r *mutationResolver) Login(ctx context.Context, input model.LoginUser) (*m
 		return nil, err
 	}
 
-	result := &model.LoginResponse{
-		Token: accessToken,
-	}
-
-	return result, nil
-}
-
-func (r *mutationResolver) Me(ctx context.Context, id int) (*model.User, error) {
-	user, err := r.UserService.GetUserByID(ctx, id)
-	if err != nil {
-		return nil, err
-	}
-
-	result := &model.User{
-		ID:        user.ID,
-		Username:  user.Username,
-		Email:     user.Email,
-		CreatedAt: user.CreatedAt,
-		UpdatedAt: user.UpdatedAt,
-	}
-
-	return result, nil
+	return &model.LoginResponse{Token: accessToken}, nil
 }
 
 func (r *mutationResolver) ForgotPassword(ctx context.Context, email string) (bool, error) {
@@ -67,3 +48,36 @@ func (r *mutationResolver) ChangePassword(ctx context.Context, input model.Chang
 	}
 	return &model.LoginResponse{Token: token}, nil
 }
+
+func (r *queryResolver) Me(ctx context.Context, id int) (*entity.User, error) {
+	user, err := r.UserService.GetUserByID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	// result := &model.User{
+	// 	ID:        user.ID,
+	// 	Username:  user.Username,
+	// 	Email:     user.Email,
+	// 	CreatedAt: user.CreatedAt,
+	// 	UpdatedAt: user.UpdatedAt,
+	// }
+
+	return &user, nil
+}
+
+func (r *userResolver) Posts(ctx context.Context, obj *entity.User) ([]*entity.Post, error) {
+	posts, err := r.PostService.GetUsersPost(ctx, obj.ID)
+
+	var result []*entity.Post
+	for _, post := range posts {
+		result = append(result, &post)
+	}
+
+	return result, err
+}
+
+// User returns generated.UserResolver implementation.
+func (r *Resolver) User() generated.UserResolver { return &userResolver{r} }
+
+type userResolver struct{ *Resolver }

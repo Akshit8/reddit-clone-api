@@ -2,11 +2,9 @@
 INSERT INTO users (
   username,
   email,
-  password,
-  created_at,
-  updated_at
+  password
 ) VALUES (
-  $1, $2, $3, $4, $5
+  $1, $2, $3
 ) RETURNING *;
 
 -- name: GetUserByID :one

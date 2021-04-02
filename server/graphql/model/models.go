@@ -2,18 +2,14 @@
 
 package model
 
-import (
-	"time"
-)
-
 type ChangePassword struct {
 	Token       string `json:"token"`
 	NewPassword string `json:"newPassword"`
 }
 
 type CreatePost struct {
-	Title       string `json:"title"`
-	Description string `json:"description"`
+	Title   string `json:"title"`
+	Content string `json:"content"`
 }
 
 type LoginResponse struct {
@@ -25,14 +21,6 @@ type LoginUser struct {
 	Password        string `json:"password"`
 }
 
-type Post struct {
-	ID          int       `json:"id"`
-	Title       string    `json:"title"`
-	Description string    `json:"description"`
-	CreatedAt   time.Time `json:"createdAt"`
-	UpdatedAt   time.Time `json:"updatedAt"`
-}
-
 type RegisterUser struct {
 	Username string `json:"username"`
 	Email    string `json:"email"`
@@ -40,15 +28,7 @@ type RegisterUser struct {
 }
 
 type UpdatePost struct {
-	ID          int     `json:"id"`
-	Title       *string `json:"title"`
-	Description *string `json:"description"`
-}
-
-type User struct {
-	ID        int       `json:"id"`
-	Username  string    `json:"username"`
-	Email     string    `json:"email"`
-	CreatedAt time.Time `json:"createdAt"`
-	UpdatedAt time.Time `json:"updatedAt"`
+	ID      int     `json:"id"`
+	Title   *string `json:"title"`
+	Content *string `json:"content"`
 }

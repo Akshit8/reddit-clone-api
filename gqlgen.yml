@@ -55,3 +55,15 @@ models:
       - github.com/99designs/gqlgen/graphql.Int
       - github.com/99designs/gqlgen/graphql.Int64
       - github.com/99designs/gqlgen/graphql.Int32
+  User:
+    model: github.com/Akshit8/reddit-clone-api/pkg/entity.User
+    fields:
+      posts:
+        resolver: true
+  Post:
+    model: github.com/Akshit8/reddit-clone-api/pkg/entity.Post
+    fields:
+      owner:
+        resolver: true
+      contentPreview:
+        resolver: true

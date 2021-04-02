@@ -68,14 +68,10 @@ func (u *userService) RegisterUser(ctx context.Context, username, password, emai
 		return entity.User{}, err
 	}
 
-	createTimestamp := time.Now()
-
 	newUser := db.CreateUserParams{
 		Username:  username,
 		Email:     email,
 		Password:  hashedPassword,
-		CreatedAt: createTimestamp,
-		UpdatedAt: createTimestamp,
 	}
 
 	user, err := u.repo.CreateUser(ctx, newUser)

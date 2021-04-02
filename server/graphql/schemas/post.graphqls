@@ -1,20 +1,23 @@
 type Post {
     id: Int!
+    owner: User!
     title: String!
-    description: String!
+    content: String!
+    contentPreview: String!
+    upVotes: Int!
     createdAt: Time!
     updatedAt: Time!
 }
 
 input CreatePost {
     title: String!
-    description: String!
+    content: String!
 }
 
 input UpdatePost {
     id: Int!
     title: String
-    description: String
+    content: String
 }
 
 extend type Query {
