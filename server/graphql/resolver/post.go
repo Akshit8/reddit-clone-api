@@ -7,6 +7,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 
 	"github.com/Akshit8/reddit-clone-api/pkg/entity"
 	"github.com/Akshit8/reddit-clone-api/server/graphql/generated"
@@ -75,12 +76,17 @@ func (r *mutationResolver) DeletePostByID(ctx context.Context, id int) (bool, er
 }
 
 func (r *postResolver) Owner(ctx context.Context, obj *entity.Post) (*entity.User, error) {
+	log.Println("owner resolver: ", obj.Owner)
 	user, err := r.UserService.GetUserByID(ctx, obj.Owner)
 	return &user, err
 }
 
 func (r *postResolver) ContentPreview(ctx context.Context, obj *entity.Post) (string, error) {
-	return obj.Content[:50], nil
+	if len(obj.Content) > 50 {
+		return obj.Content[:50], nil
+	}
+	return obj.Content, nil
+
 }
 
 func (r *queryResolver) GetPostByID(ctx context.Context, id int) (*entity.Post, error) {
@@ -108,9 +114,12 @@ func (r *queryResolver) GetPosts(ctx context.Context) ([]*entity.Post, error) {
 
 	var result []*entity.Post
 	for _, post := range posts {
+		fmt.Println("post:", &post)
 		result = append(result, &post)
 	}
-
+	for _, res := range result {
+		fmt.Println("res:", res)
+	}
 	return result, nil
 }
 

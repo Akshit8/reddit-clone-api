@@ -11,6 +11,7 @@ type Post struct {
 	Owner     int       `json:"owner"`
 	Title     string    `json:"title"`
 	Content   string    `json:"content"`
+	UpVotes   int       `json:"upvotes"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
