@@ -11,7 +11,7 @@ INSERT INTO posts (
 SELECT * FROM posts WHERE id = $1 LIMIT 1;
 
 -- name: GetPosts :many
-SELECT * FROM posts ORDER BY id;
+SELECT * FROM posts WHERE created_at > $2 ORDER BY created_at DESC LIMIT $1;
 
 -- name: GetAllUserPosts :many
 SELECT * FROM posts WHERE owner = $1 ORDER BY id;

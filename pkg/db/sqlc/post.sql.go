@@ -5,6 +5,7 @@ package db
 
 import (
 	"context"
+	"time"
 )
 
 const createPost = `-- name: CreatePost :one
@@ -102,11 +103,16 @@ func (q *Queries) GetPostByID(ctx context.Context, id int64) (Post, error) {
 }
 
 const getPosts = `-- name: GetPosts :many
-SELECT id, owner, title, content, upvotes, created_at, updated_at FROM posts ORDER BY id
+SELECT id, owner, title, content, upvotes, created_at, updated_at FROM posts WHERE created_at > $2 ORDER BY created_at DESC LIMIT $1
 `
 
-func (q *Queries) GetPosts(ctx context.Context) ([]Post, error) {
-	rows, err := q.query(ctx, q.getPostsStmt, getPosts)
+type GetPostsParams struct {
+	Limit     int32
+	CreatedAt time.Time
+}
+
+func (q *Queries) GetPosts(ctx context.Context, arg GetPostsParams) ([]Post, error) {
+	rows, err := q.query(ctx, q.getPostsStmt, getPosts, arg.Limit, arg.CreatedAt)
 	if err != nil {
 		return nil, err
 	}

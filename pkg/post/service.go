@@ -13,7 +13,7 @@ import (
 type Service interface {
 	CreatePost(ctx context.Context, post entity.Post) (entity.Post, error)
 	GetPostByID(ctx context.Context, id int) (entity.Post, error)
-	GetPosts(ctx context.Context) ([]entity.Post, error)
+	GetPosts(ctx context.Context, limit int, cursor time.Time) ([]entity.Post, error)
 	GetUsersPost(ctx context.Context, userID int) ([]entity.Post, error)
 	UpdatePostByID(ctx context.Context, post entity.Post) (entity.Post, error)
 	DeletePostByID(ctx context.Context, id int) (bool, error)
@@ -72,8 +72,11 @@ func (p *postService) GetPostByID(ctx context.Context, id int) (entity.Post, err
 	return result, nil
 }
 
-func (p *postService) GetPosts(ctx context.Context) ([]entity.Post, error) {
-	posts, err := p.repo.GetPosts(ctx)
+func (p *postService) GetPosts(ctx context.Context, limit int, cursor time.Time) ([]entity.Post, error) {
+	posts, err := p.repo.GetPosts(ctx, db.GetPostsParams{
+		Limit:  int32(limit),
+		CreatedAt: cursor,
+	})
 	if err != nil {
 		return []entity.Post{}, err
 	}

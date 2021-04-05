@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/Akshit8/reddit-clone-api/pkg/entity"
 	"github.com/Akshit8/reddit-clone-api/server/graphql/generated"
@@ -86,7 +87,6 @@ func (r *postResolver) ContentPreview(ctx context.Context, obj *entity.Post) (st
 		return obj.Content[:50], nil
 	}
 	return obj.Content, nil
-
 }
 
 func (r *queryResolver) GetPostByID(ctx context.Context, id int) (*entity.Post, error) {
@@ -94,6 +94,8 @@ func (r *queryResolver) GetPostByID(ctx context.Context, id int) (*entity.Post, 
 	if err != nil {
 		return nil, err
 	}
+
+	fmt.Println(post.CreatedAt)
 
 	// result := &model.Post{
 	// 	ID:        post.ID,
@@ -106,19 +108,25 @@ func (r *queryResolver) GetPostByID(ctx context.Context, id int) (*entity.Post, 
 	return &post, nil
 }
 
-func (r *queryResolver) GetPosts(ctx context.Context) ([]*entity.Post, error) {
-	posts, err := r.PostService.GetPosts(ctx)
+func (r *queryResolver) GetPosts(ctx context.Context, limit int, cursor *string) ([]*entity.Post, error) {
+	var arg time.Time
+	var err error
+	if cursor == nil {
+		arg = time.Time{}
+	} else {
+		arg, err = time.Parse("2006-01-02T15:04:05Z", *cursor)
+		if err != nil {
+			return nil, err
+		}
+	}
+	posts, err := r.PostService.GetPosts(ctx, limit, arg)
 	if err != nil {
 		return nil, err
 	}
 
-	var result []*entity.Post
-	for _, post := range posts {
-		fmt.Println("post:", &post)
-		result = append(result, &post)
-	}
-	for _, res := range result {
-		fmt.Println("res:", res)
+	result := make([]*entity.Post, len(posts))
+	for i := range posts {
+		result[i] = &posts[i]
 	}
 	return result, nil
 }

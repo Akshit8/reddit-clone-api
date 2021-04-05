@@ -69,12 +69,13 @@ type ComplexityRoot struct {
 		ID             func(childComplexity int) int
 		Owner          func(childComplexity int) int
 		Title          func(childComplexity int) int
+		UpVotes        func(childComplexity int) int
 		UpdatedAt      func(childComplexity int) int
 	}
 
 	Query struct {
 		GetPostByID func(childComplexity int, id int) int
-		GetPosts    func(childComplexity int) int
+		GetPosts    func(childComplexity int, limit int, cursor *string) int
 		HealthQuery func(childComplexity int) int
 		Me          func(childComplexity int, id int) int
 	}
@@ -107,7 +108,7 @@ type PostResolver interface {
 type QueryResolver interface {
 	HealthQuery(ctx context.Context) (string, error)
 	GetPostByID(ctx context.Context, id int) (*entity.Post, error)
-	GetPosts(ctx context.Context) ([]*entity.Post, error)
+	GetPosts(ctx context.Context, limit int, cursor *string) ([]*entity.Post, error)
 	Me(ctx context.Context, id int) (*entity.User, error)
 }
 type UserResolver interface {
@@ -274,6 +275,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Post.Title(childComplexity), true
 
+	case "Post.upVotes":
+		if e.complexity.Post.UpVotes == nil {
+			break
+		}
+
+		return e.complexity.Post.UpVotes(childComplexity), true
+
 	case "Post.updatedAt":
 		if e.complexity.Post.UpdatedAt == nil {
 			break
@@ -298,7 +306,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			break
 		}
 
-		return e.complexity.Query.GetPosts(childComplexity), true
+		args, err := ec.field_Query_getPosts_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.GetPosts(childComplexity, args["limit"].(int), args["cursor"].(*string)), true
 
 	case "Query.healthQuery":
 		if e.complexity.Query.HealthQuery == nil {
@@ -440,6 +453,7 @@ type Mutation {
     title: String!
     content: String!
     contentPreview: String!
+    upVotes: Int!
     createdAt: Time!
     updatedAt: Time!
 }
@@ -457,7 +471,7 @@ input UpdatePost {
 
 extend type Query {
     getPostById(id: Int!): Post!
-    getPosts: [Post!]!
+    getPosts(limit: Int!, cursor: String): [Post!]!
 }
 
 extend type Mutation {
@@ -658,6 +672,30 @@ func (ec *executionContext) field_Query_getPostById_args(ctx context.Context, ra
 		}
 	}
 	args["id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_getPosts_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 int
+	if tmp, ok := rawArgs["limit"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("limit"))
+		arg0, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["limit"] = arg0
+	var arg1 *string
+	if tmp, ok := rawArgs["cursor"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("cursor"))
+		arg1, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["cursor"] = arg1
 	return args, nil
 }
 
@@ -1260,6 +1298,41 @@ func (ec *executionContext) _Post_contentPreview(ctx context.Context, field grap
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Post_upVotes(ctx context.Context, field graphql.CollectedField, obj *entity.Post) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Post",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.UpVotes, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Post_createdAt(ctx context.Context, field graphql.CollectedField, obj *entity.Post) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -1423,9 +1496,16 @@ func (ec *executionContext) _Query_getPosts(ctx context.Context, field graphql.C
 	}
 
 	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Query_getPosts_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().GetPosts(rctx)
+		return ec.resolvers.Query().GetPosts(rctx, args["limit"].(int), args["cursor"].(*string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -3163,6 +3243,11 @@ func (ec *executionContext) _Post(ctx context.Context, sel ast.SelectionSet, obj
 				}
 				return res
 			})
+		case "upVotes":
+			out.Values[i] = ec._Post_upVotes(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
 		case "createdAt":
 			out.Values[i] = ec._Post_createdAt(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
