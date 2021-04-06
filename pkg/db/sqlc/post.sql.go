@@ -103,7 +103,7 @@ func (q *Queries) GetPostByID(ctx context.Context, id int64) (Post, error) {
 }
 
 const getPosts = `-- name: GetPosts :many
-SELECT id, owner, title, content, upvotes, created_at, updated_at FROM posts WHERE created_at > $2 ORDER BY created_at DESC LIMIT $1
+SELECT id, owner, title, content, upvotes, created_at, updated_at FROM posts WHERE created_at < $2 ORDER BY created_at DESC LIMIT $1
 `
 
 type GetPostsParams struct {

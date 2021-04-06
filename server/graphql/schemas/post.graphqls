@@ -20,9 +20,14 @@ input UpdatePost {
     content: String
 }
 
+type PaginatedPosts {
+    posts: [Post!]!
+    hasMore: Boolean!
+}
+
 extend type Query {
     getPostById(id: Int!): Post!
-    getPosts(limit: Int!, cursor: String): [Post!]!
+    getPosts(limit: Int!, cursor: String): PaginatedPosts
 }
 
 extend type Mutation {

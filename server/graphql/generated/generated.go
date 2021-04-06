@@ -62,6 +62,11 @@ type ComplexityRoot struct {
 		UpdatePostByID func(childComplexity int, input model.UpdatePost) int
 	}
 
+	PaginatedPosts struct {
+		HasMore func(childComplexity int) int
+		Posts   func(childComplexity int) int
+	}
+
 	Post struct {
 		Content        func(childComplexity int) int
 		ContentPreview func(childComplexity int) int
@@ -108,7 +113,7 @@ type PostResolver interface {
 type QueryResolver interface {
 	HealthQuery(ctx context.Context) (string, error)
 	GetPostByID(ctx context.Context, id int) (*entity.Post, error)
-	GetPosts(ctx context.Context, limit int, cursor *string) ([]*entity.Post, error)
+	GetPosts(ctx context.Context, limit int, cursor *string) (*model.PaginatedPosts, error)
 	Me(ctx context.Context, id int) (*entity.User, error)
 }
 type UserResolver interface {
@@ -232,6 +237,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.UpdatePostByID(childComplexity, args["input"].(model.UpdatePost)), true
+
+	case "PaginatedPosts.hasMore":
+		if e.complexity.PaginatedPosts.HasMore == nil {
+			break
+		}
+
+		return e.complexity.PaginatedPosts.HasMore(childComplexity), true
+
+	case "PaginatedPosts.posts":
+		if e.complexity.PaginatedPosts.Posts == nil {
+			break
+		}
+
+		return e.complexity.PaginatedPosts.Posts(childComplexity), true
 
 	case "Post.content":
 		if e.complexity.Post.Content == nil {
@@ -469,9 +488,14 @@ input UpdatePost {
     content: String
 }
 
+type PaginatedPosts {
+    posts: [Post!]!
+    hasMore: Boolean!
+}
+
 extend type Query {
     getPostById(id: Int!): Post!
-    getPosts(limit: Int!, cursor: String): [Post!]!
+    getPosts(limit: Int!, cursor: String): PaginatedPosts
 }
 
 extend type Mutation {
@@ -1123,6 +1147,76 @@ func (ec *executionContext) _Mutation_changePassword(ctx context.Context, field 
 	return ec.marshalNLoginResponse2ᚖgithubᚗcomᚋAkshit8ᚋredditᚑcloneᚑapiᚋserverᚋgraphqlᚋmodelᚐLoginResponse(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _PaginatedPosts_posts(ctx context.Context, field graphql.CollectedField, obj *model.PaginatedPosts) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "PaginatedPosts",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Posts, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*entity.Post)
+	fc.Result = res
+	return ec.marshalNPost2ᚕᚖgithubᚗcomᚋAkshit8ᚋredditᚑcloneᚑapiᚋpkgᚋentityᚐPostᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _PaginatedPosts_hasMore(ctx context.Context, field graphql.CollectedField, obj *model.PaginatedPosts) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "PaginatedPosts",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.HasMore, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Post_id(ctx context.Context, field graphql.CollectedField, obj *entity.Post) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -1512,14 +1606,11 @@ func (ec *executionContext) _Query_getPosts(ctx context.Context, field graphql.C
 		return graphql.Null
 	}
 	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
 		return graphql.Null
 	}
-	res := resTmp.([]*entity.Post)
+	res := resTmp.(*model.PaginatedPosts)
 	fc.Result = res
-	return ec.marshalNPost2ᚕᚖgithubᚗcomᚋAkshit8ᚋredditᚑcloneᚑapiᚋpkgᚋentityᚐPostᚄ(ctx, field.Selections, res)
+	return ec.marshalOPaginatedPosts2ᚖgithubᚗcomᚋAkshit8ᚋredditᚑcloneᚑapiᚋserverᚋgraphqlᚋmodelᚐPaginatedPosts(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_me(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -3189,6 +3280,38 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 	return out
 }
 
+var paginatedPostsImplementors = []string{"PaginatedPosts"}
+
+func (ec *executionContext) _PaginatedPosts(ctx context.Context, sel ast.SelectionSet, obj *model.PaginatedPosts) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, paginatedPostsImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("PaginatedPosts")
+		case "posts":
+			out.Values[i] = ec._PaginatedPosts_posts(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "hasMore":
+			out.Values[i] = ec._PaginatedPosts_hasMore(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
 var postImplementors = []string{"Post"}
 
 func (ec *executionContext) _Post(ctx context.Context, sel ast.SelectionSet, obj *entity.Post) graphql.Marshaler {
@@ -3321,9 +3444,6 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_getPosts(ctx, field)
-				if res == graphql.Null {
-					atomic.AddUint32(&invalids, 1)
-				}
 				return res
 			})
 		case "me":
@@ -4076,6 +4196,13 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 		return graphql.Null
 	}
 	return graphql.MarshalBoolean(*v)
+}
+
+func (ec *executionContext) marshalOPaginatedPosts2ᚖgithubᚗcomᚋAkshit8ᚋredditᚑcloneᚑapiᚋserverᚋgraphqlᚋmodelᚐPaginatedPosts(ctx context.Context, sel ast.SelectionSet, v *model.PaginatedPosts) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._PaginatedPosts(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalOString2string(ctx context.Context, v interface{}) (string, error) {

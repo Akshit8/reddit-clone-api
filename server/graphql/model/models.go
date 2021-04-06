@@ -2,6 +2,10 @@
 
 package model
 
+import (
+	"github.com/Akshit8/reddit-clone-api/pkg/entity"
+)
+
 type ChangePassword struct {
 	Token       string `json:"token"`
 	NewPassword string `json:"newPassword"`
@@ -19,6 +23,11 @@ type LoginResponse struct {
 type LoginUser struct {
 	UsernameOrEmail string `json:"usernameOrEmail"`
 	Password        string `json:"password"`
+}
+
+type PaginatedPosts struct {
+	Posts   []*entity.Post `json:"posts"`
+	HasMore bool           `json:"hasMore"`
 }
 
 type RegisterUser struct {

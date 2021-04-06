@@ -78,7 +78,12 @@ func (r *mutationResolver) DeletePostByID(ctx context.Context, id int) (bool, er
 
 func (r *postResolver) Owner(ctx context.Context, obj *entity.Post) (*entity.User, error) {
 	log.Println("owner resolver: ", obj.Owner)
+	log.Println("using")
+	loggedInUser :=  middleware.FindUserFromContext(ctx) 
 	user, err := r.UserService.GetUserByID(ctx, obj.Owner)
+	if loggedInUser.ID != user.ID {
+		user.Email = ""
+	}
 	return &user, err
 }
 
@@ -108,27 +113,36 @@ func (r *queryResolver) GetPostByID(ctx context.Context, id int) (*entity.Post, 
 	return &post, nil
 }
 
-func (r *queryResolver) GetPosts(ctx context.Context, limit int, cursor *string) ([]*entity.Post, error) {
+func (r *queryResolver) GetPosts(ctx context.Context, limit int, cursor *string) (*model.PaginatedPosts, error) {
 	var arg time.Time
 	var err error
 	if cursor == nil {
-		arg = time.Time{}
+		arg = time.Now()
+		log.Println(arg)
 	} else {
 		arg, err = time.Parse("2006-01-02T15:04:05Z", *cursor)
 		if err != nil {
 			return nil, err
 		}
 	}
-	posts, err := r.PostService.GetPosts(ctx, limit, arg)
+	posts, err := r.PostService.GetPosts(ctx, limit + 1, arg)
 	if err != nil {
 		return nil, err
 	}
-
-	result := make([]*entity.Post, len(posts))
+	fmt.Println("post length", len(posts))
+	result := make([]*entity.Post, limit)
 	for i := range posts {
+		fmt.Println(i)
+		if i == limit {
+			break
+		}
 		result[i] = &posts[i]
 	}
-	return result, nil
+
+	return &model.PaginatedPosts{
+		Posts: result,
+		HasMore: limit + 1 == len(posts),
+	}, nil
 }
 
 // Post returns generated.PostResolver implementation.
