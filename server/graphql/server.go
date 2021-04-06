@@ -24,6 +24,7 @@ func NewGraphqlServer(
 		PostService: postService,
 		UserService: userService,
 	}}
+	
 	executableSchema := generated.NewExecutableSchema(config)
 	srv := handler.NewDefaultServer(executableSchema)
 

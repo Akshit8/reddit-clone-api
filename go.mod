@@ -12,10 +12,12 @@ require (
 	github.com/lib/pq v1.10.0
 	github.com/onsi/ginkgo v1.15.0 // indirect
 	github.com/onsi/gomega v1.10.5 // indirect
+	github.com/pelletier/go-toml v1.9.0 // indirect
 	github.com/reiver/go-pqerror v0.0.0-20160209202356-63f13fe5516a
 	github.com/sirupsen/logrus v1.8.1
 	github.com/spf13/viper v1.7.1
 	github.com/stretchr/testify v1.7.0
 	github.com/vektah/gqlparser/v2 v2.1.0
 	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
+	golang.org/x/sys v0.0.0-20210403161142-5e06dd20ab57 // indirect
 )

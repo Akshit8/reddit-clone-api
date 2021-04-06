@@ -43,7 +43,10 @@ sqlc:
 	sqlc generate
 
 run:
-	 go run cmd/main.go
+	go run cmd/main.go
+
+live:
+	reflex -r '\.go' -s -- sh -c "make run"
 
 dev:
 	docker-compose -f dev.yml up -d

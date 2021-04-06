@@ -22,3 +22,6 @@
 
 # custom ci stuff
 .golangci.yml
+
+# hot reload binary dump
+tmp
