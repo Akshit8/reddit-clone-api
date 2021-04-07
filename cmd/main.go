@@ -53,7 +53,7 @@ func main() {
 		appConfig.MailPassword,
 	)
 
-	repo := db.New(conn)
+	repo := db.NewStore(conn)
 	postService := post.NewPostService(repo)
 	userService := user.NewUserService(repo, tokenMaker, hasher, redis, mailer)
 

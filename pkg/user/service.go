@@ -22,7 +22,7 @@ import (
 )
 
 const (
-	tokenDuration          = 1 * time.Hour
+	tokenDuration          = 24 * time.Hour
 	forgotPasswordPrefix   = "forgot_password"
 	forgotPasswordDuration = time.Duration(30 * time.Minute)
 )
@@ -38,7 +38,7 @@ type Service interface {
 }
 
 type userService struct {
-	repo       *db.Queries
+	repo       *db.Store
 	hasher     password.Hasher
 	tokenMaker token.Maker
 	redis      redis.CacheOperations
@@ -47,7 +47,7 @@ type userService struct {
 
 // NewUserService creates new instance of postService
 func NewUserService(
-	repo *db.Queries,
+	repo *db.Store,
 	tokenMaker token.Maker,
 	hasher password.Hasher,
 	redis redis.CacheOperations,

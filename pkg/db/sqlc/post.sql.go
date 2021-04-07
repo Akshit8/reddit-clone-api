@@ -156,3 +156,17 @@ func (q *Queries) UpdatePostByID(ctx context.Context, arg UpdatePostByIDParams) 
 	_, err := q.exec(ctx, q.updatePostByIDStmt, updatePostByID, arg.ID, arg.Title, arg.Content)
 	return err
 }
+
+const updatePostUpvotes = `-- name: UpdatePostUpvotes :exec
+UPDATE posts SET upvotes = upvotes + $2 WHERE id = $1
+`
+
+type UpdatePostUpvotesParams struct {
+	ID      int64
+	Upvotes int64
+}
+
+func (q *Queries) UpdatePostUpvotes(ctx context.Context, arg UpdatePostUpvotesParams) error {
+	_, err := q.exec(ctx, q.updatePostUpvotesStmt, updatePostUpvotes, arg.ID, arg.Upvotes)
+	return err
+}

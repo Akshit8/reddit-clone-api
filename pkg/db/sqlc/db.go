@@ -25,6 +25,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.createPostStmt, err = db.PrepareContext(ctx, createPost); err != nil {
 		return nil, fmt.Errorf("error preparing query CreatePost: %w", err)
 	}
+	if q.createUpvoteStmt, err = db.PrepareContext(ctx, createUpvote); err != nil {
+		return nil, fmt.Errorf("error preparing query CreateUpvote: %w", err)
+	}
 	if q.createUserStmt, err = db.PrepareContext(ctx, createUser); err != nil {
 		return nil, fmt.Errorf("error preparing query CreateUser: %w", err)
 	}
@@ -52,6 +55,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.updatePostByIDStmt, err = db.PrepareContext(ctx, updatePostByID); err != nil {
 		return nil, fmt.Errorf("error preparing query UpdatePostByID: %w", err)
 	}
+	if q.updatePostUpvotesStmt, err = db.PrepareContext(ctx, updatePostUpvotes); err != nil {
+		return nil, fmt.Errorf("error preparing query UpdatePostUpvotes: %w", err)
+	}
 	if q.updateUserPasswordStmt, err = db.PrepareContext(ctx, updateUserPassword); err != nil {
 		return nil, fmt.Errorf("error preparing query UpdateUserPassword: %w", err)
 	}
@@ -63,6 +69,11 @@ func (q *Queries) Close() error {
 	if q.createPostStmt != nil {
 		if cerr := q.createPostStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing createPostStmt: %w", cerr)
+		}
+	}
+	if q.createUpvoteStmt != nil {
+		if cerr := q.createUpvoteStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing createUpvoteStmt: %w", cerr)
 		}
 	}
 	if q.createUserStmt != nil {
@@ -110,6 +121,11 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing updatePostByIDStmt: %w", cerr)
 		}
 	}
+	if q.updatePostUpvotesStmt != nil {
+		if cerr := q.updatePostUpvotesStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing updatePostUpvotesStmt: %w", cerr)
+		}
+	}
 	if q.updateUserPasswordStmt != nil {
 		if cerr := q.updateUserPasswordStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing updateUserPasswordStmt: %w", cerr)
@@ -155,6 +171,7 @@ type Queries struct {
 	db                     DBTX
 	tx                     *sql.Tx
 	createPostStmt         *sql.Stmt
+	createUpvoteStmt       *sql.Stmt
 	createUserStmt         *sql.Stmt
 	deletePostByIDStmt     *sql.Stmt
 	getAllUserPostsStmt    *sql.Stmt
@@ -164,6 +181,7 @@ type Queries struct {
 	getUserByIDStmt        *sql.Stmt
 	getUserByUsernameStmt  *sql.Stmt
 	updatePostByIDStmt     *sql.Stmt
+	updatePostUpvotesStmt  *sql.Stmt
 	updateUserPasswordStmt *sql.Stmt
 }
 
@@ -172,6 +190,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		db:                     tx,
 		tx:                     tx,
 		createPostStmt:         q.createPostStmt,
+		createUpvoteStmt:       q.createUpvoteStmt,
 		createUserStmt:         q.createUserStmt,
 		deletePostByIDStmt:     q.deletePostByIDStmt,
 		getAllUserPostsStmt:    q.getAllUserPostsStmt,
@@ -181,6 +200,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		getUserByIDStmt:        q.getUserByIDStmt,
 		getUserByUsernameStmt:  q.getUserByUsernameStmt,
 		updatePostByIDStmt:     q.updatePostByIDStmt,
+		updatePostUpvotesStmt:  q.updatePostUpvotesStmt,
 		updateUserPasswordStmt: q.updateUserPasswordStmt,
 	}
 }

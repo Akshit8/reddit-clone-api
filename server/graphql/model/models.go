@@ -41,3 +41,8 @@ type UpdatePost struct {
 	Title   *string `json:"title"`
 	Content *string `json:"content"`
 }
+
+type UpvotePost struct {
+	ID     int  `json:"id"`
+	Upvote bool `json:"upvote"`
+}

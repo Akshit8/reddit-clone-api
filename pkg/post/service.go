@@ -17,14 +17,15 @@ type Service interface {
 	GetUsersPost(ctx context.Context, userID int) ([]entity.Post, error)
 	UpdatePostByID(ctx context.Context, post entity.Post) (entity.Post, error)
 	DeletePostByID(ctx context.Context, id int) (bool, error)
+	UpvotePost(ctx context.Context, postID, userID int, upvote bool) (bool, error)
 }
 
 type postService struct {
-	repo *db.Queries
+	repo *db.Store
 }
 
 // NewPostService creates new instance of postService
-func NewPostService(repo *db.Queries) Service {
+func NewPostService(repo *db.Store) Service {
 	return &postService{
 		repo: repo,
 	}
@@ -65,6 +66,7 @@ func (p *postService) GetPostByID(ctx context.Context, id int) (entity.Post, err
 		Title:     post.Title,
 		Owner:     int(post.Owner),
 		Content:   post.Content,
+		UpVotes:   int(post.Upvotes),
 		CreatedAt: post.CreatedAt,
 		UpdatedAt: post.UpdatedAt,
 	}
@@ -74,7 +76,7 @@ func (p *postService) GetPostByID(ctx context.Context, id int) (entity.Post, err
 
 func (p *postService) GetPosts(ctx context.Context, limit int, cursor time.Time) ([]entity.Post, error) {
 	posts, err := p.repo.GetPosts(ctx, db.GetPostsParams{
-		Limit:  int32(limit),
+		Limit:     int32(limit),
 		CreatedAt: cursor,
 	})
 	if err != nil {
@@ -178,4 +180,25 @@ func (p *postService) GetUsersPost(ctx context.Context, userID int) ([]entity.Po
 	}
 
 	return result, nil
+}
+
+func (p *postService) UpvotePost(ctx context.Context, postID, userID int, upvote bool) (bool, error) {
+	var value int
+	if upvote {
+		value = 1
+	} else {
+		value = -1
+	}
+
+	err := p.repo.UpvoteTx(ctx, db.UpvoteTxParams{
+		UserID: int64(userID),
+		PostID: int64(postID),
+		Value:  int32(value),
+	})
+
+	if err != nil {
+		return false, err
+	}
+
+	return true, nil
 }

@@ -19,5 +19,8 @@ SELECT * FROM posts WHERE owner = $1 ORDER BY id;
 -- name: UpdatePostByID :exec
 UPDATE posts SET title = $2, content = $3 WHERE id = $1;
 
+-- name: UpdatePostUpvotes :exec
+UPDATE posts SET upvotes = upvotes + $2 WHERE id = $1;
+
 -- name: DeletePostByID :exec
 DELETE FROM posts WHERE id = $1;

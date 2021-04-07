@@ -60,6 +60,7 @@ type ComplexityRoot struct {
 		Login          func(childComplexity int, input model.LoginUser) int
 		Register       func(childComplexity int, input model.RegisterUser) int
 		UpdatePostByID func(childComplexity int, input model.UpdatePost) int
+		UpvotePost     func(childComplexity int, input model.UpvotePost) int
 	}
 
 	PaginatedPosts struct {
@@ -100,6 +101,7 @@ type MutationResolver interface {
 	CreatePost(ctx context.Context, input model.CreatePost) (*entity.Post, error)
 	UpdatePostByID(ctx context.Context, input model.UpdatePost) (*entity.Post, error)
 	DeletePostByID(ctx context.Context, id int) (bool, error)
+	UpvotePost(ctx context.Context, input model.UpvotePost) (bool, error)
 	Register(ctx context.Context, input model.RegisterUser) (*entity.User, error)
 	Login(ctx context.Context, input model.LoginUser) (*model.LoginResponse, error)
 	ForgotPassword(ctx context.Context, email string) (bool, error)
@@ -237,6 +239,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.UpdatePostByID(childComplexity, args["input"].(model.UpdatePost)), true
+
+	case "Mutation.upvotePost":
+		if e.complexity.Mutation.UpvotePost == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_upvotePost_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UpvotePost(childComplexity, args["input"].(model.UpvotePost)), true
 
 	case "PaginatedPosts.hasMore":
 		if e.complexity.PaginatedPosts.HasMore == nil {
@@ -477,6 +491,11 @@ type Mutation {
     updatedAt: Time!
 }
 
+type PaginatedPosts {
+    posts: [Post!]!
+    hasMore: Boolean!
+}
+
 input CreatePost {
     title: String!
     content: String!
@@ -488,9 +507,9 @@ input UpdatePost {
     content: String
 }
 
-type PaginatedPosts {
-    posts: [Post!]!
-    hasMore: Boolean!
+input UpvotePost {
+    id: Int!
+    upvote: Boolean!
 }
 
 extend type Query {
@@ -502,6 +521,7 @@ extend type Mutation {
     createPost(input: CreatePost!): Post!
     updatePostById(input: UpdatePost!): Post!
     deletePostById(id: Int!): Boolean!
+    upvotePost(input: UpvotePost!): Boolean!
 }`, BuiltIn: false},
 	{Name: "server/graphql/schemas/user.graphqls", Input: `type User {
     id: Int!
@@ -661,6 +681,21 @@ func (ec *executionContext) field_Mutation_updatePostById_args(ctx context.Conte
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
 		arg0, err = ec.unmarshalNUpdatePost2githubᚗcomᚋAkshit8ᚋredditᚑcloneᚑapiᚋserverᚋgraphqlᚋmodelᚐUpdatePost(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_upvotePost_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 model.UpvotePost
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNUpvotePost2githubᚗcomᚋAkshit8ᚋredditᚑcloneᚑapiᚋserverᚋgraphqlᚋmodelᚐUpvotePost(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -963,6 +998,48 @@ func (ec *executionContext) _Mutation_deletePostById(ctx context.Context, field 
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
 		return ec.resolvers.Mutation().DeletePostByID(rctx, args["id"].(int))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_upvotePost(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_upvotePost_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().UpvotePost(rctx, args["input"].(model.UpvotePost))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -3179,6 +3256,34 @@ func (ec *executionContext) unmarshalInputUpdatePost(ctx context.Context, obj in
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputUpvotePost(ctx context.Context, obj interface{}) (model.UpvotePost, error) {
+	var it model.UpvotePost
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "id":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+			it.ID, err = ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "upvote":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("upvote"))
+			it.Upvote, err = ec.unmarshalNBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 // endregion **************************** input.gotpl *****************************
 
 // region    ************************** interface.gotpl ***************************
@@ -3246,6 +3351,11 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			}
 		case "deletePostById":
 			out.Values[i] = ec._Mutation_deletePostById(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "upvotePost":
+			out.Values[i] = ec._Mutation_upvotePost(ctx, field)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
@@ -3928,6 +4038,11 @@ func (ec *executionContext) marshalNTime2timeᚐTime(ctx context.Context, sel as
 
 func (ec *executionContext) unmarshalNUpdatePost2githubᚗcomᚋAkshit8ᚋredditᚑcloneᚑapiᚋserverᚋgraphqlᚋmodelᚐUpdatePost(ctx context.Context, v interface{}) (model.UpdatePost, error) {
 	res, err := ec.unmarshalInputUpdatePost(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNUpvotePost2githubᚗcomᚋAkshit8ᚋredditᚑcloneᚑapiᚋserverᚋgraphqlᚋmodelᚐUpvotePost(ctx context.Context, v interface{}) (model.UpvotePost, error) {
+	res, err := ec.unmarshalInputUpvotePost(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 

@@ -76,10 +76,18 @@ func (r *mutationResolver) DeletePostByID(ctx context.Context, id int) (bool, er
 	return r.PostService.DeletePostByID(ctx, id)
 }
 
+func (r *mutationResolver) UpvotePost(ctx context.Context, input model.UpvotePost) (bool, error) {
+	user := middleware.FindUserFromContext(ctx)
+	if user == nil {
+		return false, errors.New("user is unauthorized")
+	}
+	return r.PostService.UpvotePost(ctx, input.ID, user.ID, input.Upvote)
+}
+
 func (r *postResolver) Owner(ctx context.Context, obj *entity.Post) (*entity.User, error) {
 	log.Println("owner resolver: ", obj.Owner)
 	log.Println("using")
-	loggedInUser :=  middleware.FindUserFromContext(ctx) 
+	loggedInUser := middleware.FindUserFromContext(ctx)
 	user, err := r.UserService.GetUserByID(ctx, obj.Owner)
 	if loggedInUser.ID != user.ID {
 		user.Email = ""
@@ -99,17 +107,7 @@ func (r *queryResolver) GetPostByID(ctx context.Context, id int) (*entity.Post, 
 	if err != nil {
 		return nil, err
 	}
-
-	fmt.Println(post.CreatedAt)
-
-	// result := &model.Post{
-	// 	ID:        post.ID,
-	// 	Title:     post.Title,
-	// 	Content:   post.Content,
-	// 	CreatedAt: post.CreatedAt,
-	// 	UpdatedAt: post.UpdatedAt,
-	// }
-
+	fmt.Println(post)
 	return &post, nil
 }
 
@@ -125,7 +123,7 @@ func (r *queryResolver) GetPosts(ctx context.Context, limit int, cursor *string)
 			return nil, err
 		}
 	}
-	posts, err := r.PostService.GetPosts(ctx, limit + 1, arg)
+	posts, err := r.PostService.GetPosts(ctx, limit+1, arg)
 	if err != nil {
 		return nil, err
 	}
@@ -140,8 +138,8 @@ func (r *queryResolver) GetPosts(ctx context.Context, limit int, cursor *string)
 	}
 
 	return &model.PaginatedPosts{
-		Posts: result,
-		HasMore: limit + 1 == len(posts),
+		Posts:   result,
+		HasMore: limit+1 == len(posts),
 	}, nil
 }
 

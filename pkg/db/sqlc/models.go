@@ -16,6 +16,14 @@ type Post struct {
 	UpdatedAt time.Time
 }
 
+type Upvote struct {
+	UserId    int64
+	PostId    int64
+	Value     int32
+	CreatedAt time.Time
+	UpdatedAt time.Time
+}
+
 type User struct {
 	ID        int64
 	Username  string

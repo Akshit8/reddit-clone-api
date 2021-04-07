@@ -1,4 +1,7 @@
 # Reddit api
+- like based gamification
+- feed preparation
+- analytics
 
 ## Folder and package specs
 

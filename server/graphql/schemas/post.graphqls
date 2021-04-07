@@ -9,6 +9,11 @@ type Post {
     updatedAt: Time!
 }
 
+type PaginatedPosts {
+    posts: [Post!]!
+    hasMore: Boolean!
+}
+
 input CreatePost {
     title: String!
     content: String!
@@ -20,9 +25,9 @@ input UpdatePost {
     content: String
 }
 
-type PaginatedPosts {
-    posts: [Post!]!
-    hasMore: Boolean!
+input UpvotePost {
+    id: Int!
+    upvote: Boolean!
 }
 
 extend type Query {
@@ -34,4 +39,5 @@ extend type Mutation {
     createPost(input: CreatePost!): Post!
     updatePostById(input: UpdatePost!): Post!
     deletePostById(id: Int!): Boolean!
+    upvotePost(input: UpvotePost!): Boolean!
 }
