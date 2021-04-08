@@ -46,37 +46,49 @@ func (s *Store) execTx(ctx context.Context, fn func(*Queries) error) error {
 
 // UpvoteTxParams defines params required for upvote transaction
 type UpvoteTxParams struct {
-	UserID  int64
-	PostID  int64
-	Value   int32
+	UserID int64
+	PostID int64
+	Value  int32
 }
 
 // UpvoteTx runs a transcation to create upvote on a post
-func (s *Store) UpvoteTx(ctx context.Context, arg UpvoteTxParams) error {
+func (s *Store) UpvoteTx(ctx context.Context, arg UpvoteTxParams, firtTime bool) error {
 	err := s.execTx(ctx, func(q *Queries) error {
-		_, err := s.CreateUpvote(ctx, CreateUpvoteParams{
-			UserId: arg.UserID,
-			PostId: arg.PostID,
-			Value:  arg.Value,
-		})
-		if err != nil {
-			pqError := err.(*pq.Error)
-			switch pqError.Code {
-			case pqerror.CodeIntegrityConstraintViolationUniqueViolation:
-				return errors.New("unique violation")
-			default:
+		if firtTime {
+			_, err := s.CreateUpvote(ctx, CreateUpvoteParams{
+				UserId: arg.UserID,
+				PostId: arg.PostID,
+				Value:  arg.Value,
+			})
+			if err != nil {
+				pqError := err.(*pq.Error)
+				switch pqError.Code {
+				case pqerror.CodeIntegrityConstraintViolationUniqueViolation:
+					return errors.New("unique violation")
+				default:
+					return err
+				}
+			}
+		} else {
+			err := s.UpdateUpvote(ctx, UpdateUpvoteParams{
+				UserId: arg.UserID,
+				PostId: arg.PostID,
+				Value: arg.Value,
+			})
+			if err != nil {
 				return err
 			}
+			arg.Value = 2 * arg.Value
 		}
 
-		err = s.UpdatePostUpvotes(ctx, UpdatePostUpvotesParams{
+		err := s.UpdatePostUpvotes(ctx, UpdatePostUpvotesParams{
 			ID:      arg.PostID,
 			Upvotes: int64(arg.Value),
 		})
 		if err != nil {
 			return err
 		}
-		
+
 		return nil
 	})
 

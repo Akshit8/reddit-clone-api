@@ -13,6 +13,7 @@ import (
 	"github.com/Akshit8/reddit-clone-api/pkg/post"
 	"github.com/Akshit8/reddit-clone-api/pkg/redis"
 	"github.com/Akshit8/reddit-clone-api/pkg/token"
+	"github.com/Akshit8/reddit-clone-api/pkg/upvote"
 	"github.com/Akshit8/reddit-clone-api/pkg/user"
 	"github.com/Akshit8/reddit-clone-api/server/graphql"
 	_ "github.com/lib/pq"
@@ -56,8 +57,9 @@ func main() {
 	repo := db.NewStore(conn)
 	postService := post.NewPostService(repo)
 	userService := user.NewUserService(repo, tokenMaker, hasher, redis, mailer)
+	upvoteService := upvote.NewUpvoteService(repo)
 
-	graphqlServer := graphql.NewGraphqlServer(postService, userService, tokenMaker)
+	graphqlServer := graphql.NewGraphqlServer(postService, userService, upvoteService, tokenMaker)
 	serverAddress := fmt.Sprintf("%s:%d", appConfig.Host, appConfig.Port)
 	log.Println("starting server at: ", serverAddress)
 	log.Fatal(http.ListenAndServe(serverAddress, graphqlServer))

@@ -5,6 +5,7 @@ type Post {
     content: String!
     contentPreview: String!
     upVotes: Int!
+    voteStatus: Int
     createdAt: Time!
     updatedAt: Time!
 }

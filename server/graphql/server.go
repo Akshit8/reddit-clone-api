@@ -6,6 +6,7 @@ import (
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/Akshit8/reddit-clone-api/pkg/post"
 	"github.com/Akshit8/reddit-clone-api/pkg/token"
+	"github.com/Akshit8/reddit-clone-api/pkg/upvote"
 	"github.com/Akshit8/reddit-clone-api/pkg/user"
 	"github.com/Akshit8/reddit-clone-api/server/graphql/generated"
 	"github.com/Akshit8/reddit-clone-api/server/graphql/middleware"
@@ -17,12 +18,14 @@ import (
 func NewGraphqlServer(
 	postService post.Service,
 	userService user.Service,
+	upvoteService upvote.Service,
 	tokenMaker token.Maker,
 ) *chi.Mux {
 
 	config := generated.Config{Resolvers: &resolver.Resolver{
 		PostService: postService,
 		UserService: userService,
+		UpvoteService: upvoteService,
 	}}
 	
 	executableSchema := generated.NewExecutableSchema(config)

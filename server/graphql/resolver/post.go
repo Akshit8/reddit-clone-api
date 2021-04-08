@@ -102,6 +102,17 @@ func (r *postResolver) ContentPreview(ctx context.Context, obj *entity.Post) (st
 	return obj.Content, nil
 }
 
+func (r *postResolver) VoteStatus(ctx context.Context, obj *entity.Post) (*int, error) {
+	loggedInUser := middleware.FindUserFromContext(ctx)
+	fmt.Println("owner:", loggedInUser.ID)
+	upvote, err := r.UpvoteService.GetUpvote(ctx, loggedInUser.ID, obj.ID)
+	if err != nil {
+		return nil, nil
+	}
+
+	return &upvote.Value, nil
+}
+
 func (r *queryResolver) GetPostByID(ctx context.Context, id int) (*entity.Post, error) {
 	post, err := r.PostService.GetPostByID(ctx, id)
 	if err != nil {
@@ -128,7 +139,11 @@ func (r *queryResolver) GetPosts(ctx context.Context, limit int, cursor *string)
 		return nil, err
 	}
 	fmt.Println("post length", len(posts))
-	result := make([]*entity.Post, limit)
+	resultLength := len(posts)
+	if len(posts) > limit {
+		resultLength--
+	}
+	result := make([]*entity.Post, resultLength)
 	for i := range posts {
 		fmt.Println(i)
 		if i == limit {

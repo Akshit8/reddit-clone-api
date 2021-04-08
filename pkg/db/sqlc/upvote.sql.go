@@ -35,3 +35,40 @@ func (q *Queries) CreateUpvote(ctx context.Context, arg CreateUpvoteParams) (Upv
 	)
 	return i, err
 }
+
+const getUpvote = `-- name: GetUpvote :one
+SELECT "userId", "postId", value, created_at, updated_at FROM upvotes WHERE "userId" = $1 AND "postId" = $2 LIMIT 1
+`
+
+type GetUpvoteParams struct {
+	UserId int64
+	PostId int64
+}
+
+func (q *Queries) GetUpvote(ctx context.Context, arg GetUpvoteParams) (Upvote, error) {
+	row := q.queryRow(ctx, q.getUpvoteStmt, getUpvote, arg.UserId, arg.PostId)
+	var i Upvote
+	err := row.Scan(
+		&i.UserId,
+		&i.PostId,
+		&i.Value,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const updateUpvote = `-- name: UpdateUpvote :exec
+UPDATE upvotes SET value = $3 WHERE "userId" = $1 AND "postId" = $2
+`
+
+type UpdateUpvoteParams struct {
+	UserId int64
+	PostId int64
+	Value  int32
+}
+
+func (q *Queries) UpdateUpvote(ctx context.Context, arg UpdateUpvoteParams) error {
+	_, err := q.exec(ctx, q.updateUpvoteStmt, updateUpvote, arg.UserId, arg.PostId, arg.Value)
+	return err
+}

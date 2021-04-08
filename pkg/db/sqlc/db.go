@@ -43,6 +43,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.getPostsStmt, err = db.PrepareContext(ctx, getPosts); err != nil {
 		return nil, fmt.Errorf("error preparing query GetPosts: %w", err)
 	}
+	if q.getUpvoteStmt, err = db.PrepareContext(ctx, getUpvote); err != nil {
+		return nil, fmt.Errorf("error preparing query GetUpvote: %w", err)
+	}
 	if q.getUserByEmailStmt, err = db.PrepareContext(ctx, getUserByEmail); err != nil {
 		return nil, fmt.Errorf("error preparing query GetUserByEmail: %w", err)
 	}
@@ -57,6 +60,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	}
 	if q.updatePostUpvotesStmt, err = db.PrepareContext(ctx, updatePostUpvotes); err != nil {
 		return nil, fmt.Errorf("error preparing query UpdatePostUpvotes: %w", err)
+	}
+	if q.updateUpvoteStmt, err = db.PrepareContext(ctx, updateUpvote); err != nil {
+		return nil, fmt.Errorf("error preparing query UpdateUpvote: %w", err)
 	}
 	if q.updateUserPasswordStmt, err = db.PrepareContext(ctx, updateUserPassword); err != nil {
 		return nil, fmt.Errorf("error preparing query UpdateUserPassword: %w", err)
@@ -101,6 +107,11 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing getPostsStmt: %w", cerr)
 		}
 	}
+	if q.getUpvoteStmt != nil {
+		if cerr := q.getUpvoteStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getUpvoteStmt: %w", cerr)
+		}
+	}
 	if q.getUserByEmailStmt != nil {
 		if cerr := q.getUserByEmailStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getUserByEmailStmt: %w", cerr)
@@ -124,6 +135,11 @@ func (q *Queries) Close() error {
 	if q.updatePostUpvotesStmt != nil {
 		if cerr := q.updatePostUpvotesStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing updatePostUpvotesStmt: %w", cerr)
+		}
+	}
+	if q.updateUpvoteStmt != nil {
+		if cerr := q.updateUpvoteStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing updateUpvoteStmt: %w", cerr)
 		}
 	}
 	if q.updateUserPasswordStmt != nil {
@@ -177,11 +193,13 @@ type Queries struct {
 	getAllUserPostsStmt    *sql.Stmt
 	getPostByIDStmt        *sql.Stmt
 	getPostsStmt           *sql.Stmt
+	getUpvoteStmt          *sql.Stmt
 	getUserByEmailStmt     *sql.Stmt
 	getUserByIDStmt        *sql.Stmt
 	getUserByUsernameStmt  *sql.Stmt
 	updatePostByIDStmt     *sql.Stmt
 	updatePostUpvotesStmt  *sql.Stmt
+	updateUpvoteStmt       *sql.Stmt
 	updateUserPasswordStmt *sql.Stmt
 }
 
@@ -196,11 +214,13 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		getAllUserPostsStmt:    q.getAllUserPostsStmt,
 		getPostByIDStmt:        q.getPostByIDStmt,
 		getPostsStmt:           q.getPostsStmt,
+		getUpvoteStmt:          q.getUpvoteStmt,
 		getUserByEmailStmt:     q.getUserByEmailStmt,
 		getUserByIDStmt:        q.getUserByIDStmt,
 		getUserByUsernameStmt:  q.getUserByUsernameStmt,
 		updatePostByIDStmt:     q.updatePostByIDStmt,
 		updatePostUpvotesStmt:  q.updatePostUpvotesStmt,
+		updateUpvoteStmt:       q.updateUpvoteStmt,
 		updateUserPasswordStmt: q.updateUserPasswordStmt,
 	}
 }

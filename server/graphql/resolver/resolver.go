@@ -3,6 +3,7 @@ package resolver
 
 import (
 	"github.com/Akshit8/reddit-clone-api/pkg/post"
+	"github.com/Akshit8/reddit-clone-api/pkg/upvote"
 	"github.com/Akshit8/reddit-clone-api/pkg/user"
 )
 
@@ -14,4 +15,5 @@ import (
 type Resolver struct{
 	PostService post.Service
 	UserService user.Service
+	UpvoteService upvote.Service
 }

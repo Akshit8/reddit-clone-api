@@ -77,6 +77,7 @@ type ComplexityRoot struct {
 		Title          func(childComplexity int) int
 		UpVotes        func(childComplexity int) int
 		UpdatedAt      func(childComplexity int) int
+		VoteStatus     func(childComplexity int) int
 	}
 
 	Query struct {
@@ -111,6 +112,8 @@ type PostResolver interface {
 	Owner(ctx context.Context, obj *entity.Post) (*entity.User, error)
 
 	ContentPreview(ctx context.Context, obj *entity.Post) (string, error)
+
+	VoteStatus(ctx context.Context, obj *entity.Post) (*int, error)
 }
 type QueryResolver interface {
 	HealthQuery(ctx context.Context) (string, error)
@@ -322,6 +325,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Post.UpdatedAt(childComplexity), true
 
+	case "Post.voteStatus":
+		if e.complexity.Post.VoteStatus == nil {
+			break
+		}
+
+		return e.complexity.Post.VoteStatus(childComplexity), true
+
 	case "Query.getPostById":
 		if e.complexity.Query.GetPostByID == nil {
 			break
@@ -487,6 +497,7 @@ type Mutation {
     content: String!
     contentPreview: String!
     upVotes: Int!
+    voteStatus: Int
     createdAt: Time!
     updatedAt: Time!
 }
@@ -1502,6 +1513,38 @@ func (ec *executionContext) _Post_upVotes(ctx context.Context, field graphql.Col
 	res := resTmp.(int)
 	fc.Result = res
 	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Post_voteStatus(ctx context.Context, field graphql.CollectedField, obj *entity.Post) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Post",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Post().VoteStatus(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*int)
+	fc.Result = res
+	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Post_createdAt(ctx context.Context, field graphql.CollectedField, obj *entity.Post) (ret graphql.Marshaler) {
@@ -3481,6 +3524,17 @@ func (ec *executionContext) _Post(ctx context.Context, sel ast.SelectionSet, obj
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
+		case "voteStatus":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Post_voteStatus(ctx, field, obj)
+				return res
+			})
 		case "createdAt":
 			out.Values[i] = ec._Post_createdAt(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
@@ -4311,6 +4365,21 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 		return graphql.Null
 	}
 	return graphql.MarshalBoolean(*v)
+}
+
+func (ec *executionContext) unmarshalOInt2ᚖint(ctx context.Context, v interface{}) (*int, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := graphql.UnmarshalInt(v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOInt2ᚖint(ctx context.Context, sel ast.SelectionSet, v *int) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return graphql.MarshalInt(*v)
 }
 
 func (ec *executionContext) marshalOPaginatedPosts2ᚖgithubᚗcomᚋAkshit8ᚋredditᚑcloneᚑapiᚋserverᚋgraphqlᚋmodelᚐPaginatedPosts(ctx context.Context, sel ast.SelectionSet, v *model.PaginatedPosts) graphql.Marshaler {

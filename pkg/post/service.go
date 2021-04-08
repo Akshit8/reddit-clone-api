@@ -3,6 +3,8 @@ package post
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 	"time"
 
 	db "github.com/Akshit8/reddit-clone-api/pkg/db/sqlc"
@@ -182,19 +184,48 @@ func (p *postService) GetUsersPost(ctx context.Context, userID int) ([]entity.Po
 	return result, nil
 }
 
-func (p *postService) UpvotePost(ctx context.Context, postID, userID int, upvote bool) (bool, error) {
+func (p *postService) UpvotePost(ctx context.Context, postID, userID int, upvoteValue bool) (bool, error) {
 	var value int
-	if upvote {
+	if upvoteValue {
 		value = 1
 	} else {
 		value = -1
 	}
 
-	err := p.repo.UpvoteTx(ctx, db.UpvoteTxParams{
+	firsTime := false
+
+	upvote, err := p.repo.GetUpvote(ctx, db.GetUpvoteParams{
+		UserId: int64(userID),
+		PostId: int64(postID),
+	})
+
+	if err != nil {
+		if err == sql.ErrNoRows {
+			firsTime = true
+			err = p.repo.UpvoteTx(ctx, db.UpvoteTxParams{
+				UserID: int64(userID),
+				PostID: int64(postID),
+				Value:  int32(value),
+			}, firsTime)
+		
+			if err != nil {
+				return false, err
+			}
+		
+			return true, nil
+		}
+		return false, err
+	}
+
+	if upvote.Value == int32(value) {
+		return false, errors.New("already voted")
+	}
+
+	err = p.repo.UpvoteTx(ctx, db.UpvoteTxParams{
 		UserID: int64(userID),
 		PostID: int64(postID),
 		Value:  int32(value),
-	})
+	}, firsTime)
 
 	if err != nil {
 		return false, err

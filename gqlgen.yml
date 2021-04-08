@@ -67,3 +67,5 @@ models:
         resolver: true
       contentPreview:
         resolver: true
+      voteStatus:
+        resolver: true
