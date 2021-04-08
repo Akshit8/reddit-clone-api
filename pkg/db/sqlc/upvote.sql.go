@@ -36,6 +36,15 @@ func (q *Queries) CreateUpvote(ctx context.Context, arg CreateUpvoteParams) (Upv
 	return i, err
 }
 
+const deleteUpvoteByPost = `-- name: DeleteUpvoteByPost :exec
+DELETE FROM upvotes WHERE "postId" = $1
+`
+
+func (q *Queries) DeleteUpvoteByPost(ctx context.Context, postid int64) error {
+	_, err := q.exec(ctx, q.deleteUpvoteByPostStmt, deleteUpvoteByPost, postid)
+	return err
+}
+
 const getUpvote = `-- name: GetUpvote :one
 SELECT "userId", "postId", value, created_at, updated_at FROM upvotes WHERE "userId" = $1 AND "postId" = $2 LIMIT 1
 `

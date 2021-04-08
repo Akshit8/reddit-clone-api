@@ -18,7 +18,7 @@ type Service interface {
 	GetPosts(ctx context.Context, limit int, cursor time.Time) ([]entity.Post, error)
 	GetUsersPost(ctx context.Context, userID int) ([]entity.Post, error)
 	UpdatePostByID(ctx context.Context, post entity.Post) (entity.Post, error)
-	DeletePostByID(ctx context.Context, id int) (bool, error)
+	DeletePostByID(ctx context.Context, id, owner int) (bool, error)
 	UpvotePost(ctx context.Context, postID, userID int, upvote bool) (bool, error)
 }
 
@@ -149,8 +149,17 @@ func (p *postService) UpdatePostByID(ctx context.Context, updatedPost entity.Pos
 	return result, nil
 }
 
-func (p *postService) DeletePostByID(ctx context.Context, id int) (bool, error) {
-	_, err := p.repo.GetPostByID(ctx, int64(id))
+func (p *postService) DeletePostByID(ctx context.Context, id, owner int) (bool, error) {
+	post, err := p.repo.GetPostByID(ctx, int64(id))
+	if err != nil {
+		return false, err
+	}
+
+	if post.Owner != int64(owner) {
+		return false, errors.New("unauthorized delete")
+	}
+
+	err = p.repo.DeleteUpvoteByPost(ctx, int64(id))
 	if err != nil {
 		return false, err
 	}
@@ -207,11 +216,11 @@ func (p *postService) UpvotePost(ctx context.Context, postID, userID int, upvote
 				PostID: int64(postID),
 				Value:  int32(value),
 			}, firsTime)
-		
+
 			if err != nil {
 				return false, err
 			}
-		
+
 			return true, nil
 		}
 		return false, err

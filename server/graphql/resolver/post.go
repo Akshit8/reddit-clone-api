@@ -73,7 +73,14 @@ func (r *mutationResolver) UpdatePostByID(ctx context.Context, input model.Updat
 }
 
 func (r *mutationResolver) DeletePostByID(ctx context.Context, id int) (bool, error) {
-	return r.PostService.DeletePostByID(ctx, id)
+	// do auth 
+	// delete post where id and owner matches
+	user := middleware.FindUserFromContext(ctx)
+	if user == nil {
+		return false, errors.New("user is unauthorized")
+	}
+
+	return r.PostService.DeletePostByID(ctx, id, user.ID)
 }
 
 func (r *mutationResolver) UpvotePost(ctx context.Context, input model.UpvotePost) (bool, error) {

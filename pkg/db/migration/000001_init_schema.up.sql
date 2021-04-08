@@ -27,8 +27,8 @@ CREATE TABLE "upvotes" (
 
 ALTER TABLE "posts" ADD FOREIGN KEY ("owner") REFERENCES "users" ("id");
 
-ALTER TABLE "upvotes" ADD FOREIGN KEY ("userId") REFERENCES "users" ("id");
+ALTER TABLE "upvotes" ADD FOREIGN KEY ("userId") REFERENCES "users" ("id") ON DELETE CASCADE ON UPDATE NO ACTION;
 
-ALTER TABLE "upvotes" ADD FOREIGN KEY ("postId") REFERENCES "posts" ("id");
+ALTER TABLE "upvotes" ADD FOREIGN KEY ("postId") REFERENCES "posts" ("id") ON DELETE CASCADE ON UPDATE NO ACTION;
 
 CREATE UNIQUE INDEX ON "upvotes" ("userId", "postId");

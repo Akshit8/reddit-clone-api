@@ -34,6 +34,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.deletePostByIDStmt, err = db.PrepareContext(ctx, deletePostByID); err != nil {
 		return nil, fmt.Errorf("error preparing query DeletePostByID: %w", err)
 	}
+	if q.deleteUpvoteByPostStmt, err = db.PrepareContext(ctx, deleteUpvoteByPost); err != nil {
+		return nil, fmt.Errorf("error preparing query DeleteUpvoteByPost: %w", err)
+	}
 	if q.getAllUserPostsStmt, err = db.PrepareContext(ctx, getAllUserPosts); err != nil {
 		return nil, fmt.Errorf("error preparing query GetAllUserPosts: %w", err)
 	}
@@ -90,6 +93,11 @@ func (q *Queries) Close() error {
 	if q.deletePostByIDStmt != nil {
 		if cerr := q.deletePostByIDStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing deletePostByIDStmt: %w", cerr)
+		}
+	}
+	if q.deleteUpvoteByPostStmt != nil {
+		if cerr := q.deleteUpvoteByPostStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing deleteUpvoteByPostStmt: %w", cerr)
 		}
 	}
 	if q.getAllUserPostsStmt != nil {
@@ -190,6 +198,7 @@ type Queries struct {
 	createUpvoteStmt       *sql.Stmt
 	createUserStmt         *sql.Stmt
 	deletePostByIDStmt     *sql.Stmt
+	deleteUpvoteByPostStmt *sql.Stmt
 	getAllUserPostsStmt    *sql.Stmt
 	getPostByIDStmt        *sql.Stmt
 	getPostsStmt           *sql.Stmt
@@ -211,6 +220,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		createUpvoteStmt:       q.createUpvoteStmt,
 		createUserStmt:         q.createUserStmt,
 		deletePostByIDStmt:     q.deletePostByIDStmt,
+		deleteUpvoteByPostStmt: q.deleteUpvoteByPostStmt,
 		getAllUserPostsStmt:    q.getAllUserPostsStmt,
 		getPostByIDStmt:        q.getPostByIDStmt,
 		getPostsStmt:           q.getPostsStmt,
